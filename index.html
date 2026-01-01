@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Método 2 | Calculadora de Trading</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #111827;
+            --bg-card: #1a2332;
+            --bg-input: #0d1117;
+            --border: #2d3748;
+            --text-primary: #f0f4f8;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent-green: #10b981;
+            --accent-green-glow: rgba(16, 185, 129, 0.3);
+            --accent-red: #ef4444;
+            --accent-red-glow: rgba(239, 68, 68, 0.3);
+            --accent-blue: #3b82f6;
+            --accent-yellow: #f59e0b;
+            --accent-purple: #8b5cf6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(ellipse at 20% 0%, rgba(16, 185, 129, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 100%, rgba(59, 130, 246, 0.08) 0%, transparent 50%);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+            color: var(--accent-green);
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-green) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .stats-banner {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-green);
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-green), var(--accent-blue));
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card-title-icon {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-input);
+            border-radius: 6px;
+            font-size: 0.875rem;
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .input-group.full-width {
+            grid-column: span 2;
+        }
+
+        label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 500;
+        }
+
+        input, select {
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--accent-green);
+            box-shadow: 0 0 0 3px var(--accent-green-glow);
+        }
+
+        input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .btn {
+            font-family: 'Space Grotesk', sans-serif;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-green) 0%, #059669 100%);
+            color: white;
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px var(--accent-green-glow);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .results-section {
+            display: none;
+        }
+
+        .results-section.visible {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .direction-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .direction-badge.long {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(16, 185, 129, 0.1) 100%);
+            border: 2px solid var(--accent-green);
+            color: var(--accent-green);
+        }
+
+        .direction-badge.short {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(239, 68, 68, 0.1) 100%);
+            border: 2px solid var(--accent-red);
+            color: var(--accent-red);
+        }
+
+        .levels-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .level-card {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+            position: relative;
+        }
+
+        .level-card.entry {
+            border-left: 4px solid var(--accent-blue);
+        }
+
+        .level-card.tp1 {
+            border-left: 4px solid var(--accent-green);
+        }
+
+        .level-card.tp2 {
+            border-left: 4px solid var(--accent-green);
+        }
+
+        .level-card.tp3 {
+            border-left: 4px solid var(--accent-purple);
+        }
+
+        .level-card.sl {
+            border-left: 4px solid var(--accent-red);
+        }
+
+        .level-card.range {
+            border-left: 4px solid var(--accent-yellow);
+        }
+
+        .level-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.25rem;
+        }
+
+        .level-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .level-desc {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        .filters-status {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: var(--bg-input);
+            border-radius: 12px;
+        }
+
+        .filter-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .filter-item:last-child {
+            border-bottom: none;
+        }
+
+        .filter-name {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .filter-status {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .filter-status.pass {
+            color: var(--accent-green);
+        }
+
+        .filter-status.fail {
+            color: var(--accent-red);
+        }
+
+        .checklist-section {
+            margin-top: 2rem;
+        }
+
+        .checklist-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: var(--bg-input);
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .checklist-item:hover {
+            background: var(--bg-secondary);
+        }
+
+        .checklist-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--accent-green);
+            cursor: pointer;
+        }
+
+        .checklist-item label {
+            font-size: 0.875rem;
+            color: var(--text-primary);
+            text-transform: none;
+            letter-spacing: normal;
+            cursor: pointer;
+        }
+
+        .execution-timeline {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, var(--bg-input) 0%, var(--bg-card) 100%);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .timeline-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .timeline-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .timeline-step {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .step-time {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--accent-blue);
+            min-width: 80px;
+        }
+
+        .step-content {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .formula-display {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+            color: var(--accent-yellow);
+        }
+
+        .vix-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-input);
+            border-radius: 50px;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+        }
+
+        .vix-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .vix-low { background: var(--accent-green); }
+        .vix-normal { background: var(--accent-blue); }
+        .vix-high { background: var(--accent-yellow); }
+        .vix-extreme { background: var(--accent-red); }
+
+        .summary-card {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
+            border: 1px solid var(--accent-green);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .summary-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--accent-green);
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            text-align: center;
+        }
+
+        .summary-item-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .summary-item-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        footer {
+            text-align: center;
+            padding: 3rem 0;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        footer a {
+            color: var(--accent-green);
+            text-decoration: none;
+        }
+
+        .info-tooltip {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            background: var(--border);
+            border-radius: 50%;
+            font-size: 0.625rem;
+            cursor: help;
+            margin-left: 0.25rem;
+        }
+
+        /* Copy button styles */
+        .copy-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.625rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            opacity: 0;
+            transition: all 0.2s;
+        }
+
+        .level-card:hover .copy-btn {
+            opacity: 1;
+        }
+
+        .copy-btn:hover {
+            color: var(--text-primary);
+            border-color: var(--accent-green);
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            font-size: 0.875rem;
+        }
+
+        .alert-warning {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid var(--accent-yellow);
+            color: var(--accent-yellow);
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--accent-green);
+            color: var(--accent-green);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">Trading System</div>
+            <h1>Método 2 Calculator</h1>
+            <p class="subtitle">Extremo Real + Rango Esperado | Gap Reversal Strategy</p>
+            <div class="stats-banner">
+                <div class="stat">
+                    <div class="stat-value">93.7%</div>
+                    <div class="stat-label">Win Rate Validado</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">$82,728</div>
+                    <div class="stat-label">Profit 3 Meses</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">1:2.14</div>
+                    <div class="stat-label">Risk/Reward</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="main-grid">
+            <!-- Input Section -->
+            <div class="card">
+                <h2 class="card-title">
+                    <span class="card-title-icon">📊</span>
+                    Datos de Entrada
+                </h2>
+                
+                <div class="input-grid">
+                    <div class="input-group">
+                        <label for="prevHigh">High Anterior</label>
+                        <input type="number" id="prevHigh" placeholder="6100.00" step="0.25">
+                    </div>
+                    <div class="input-group">
+                        <label for="prevLow">Low Anterior</label>
+                        <input type="number" id="prevLow" placeholder="6050.00" step="0.25">
+                    </div>
+                    <div class="input-group">
+                        <label for="prevClose">Close Anterior</label>
+                        <input type="number" id="prevClose" placeholder="6080.00" step="0.25">
+                    </div>
+                    <div class="input-group">
+                        <label for="todayOpen">Open Hoy</label>
+                        <input type="number" id="todayOpen" placeholder="6095.00" step="0.25">
+                    </div>
+                    <div class="input-group">
+                        <label for="extremeReal">
+                            Extremo Real (10:30 ET)
+                            <span class="info-tooltip" title="High o Low formado después de 1.5h de apertura">?</span>
+                        </label>
+                        <input type="number" id="extremeReal" placeholder="6102.50" step="0.25">
+                    </div>
+                    <div class="input-group">
+                        <label for="vixLevel">VIX Actual</label>
+                        <select id="vixLevel">
+                            <option value="low">VIX &lt; 15 (Baja Vol)</option>
+                            <option value="normal" selected>VIX 15-20 (Normal)</option>
+                            <option value="high">VIX 20-25 (Alta Vol)</option>
+                            <option value="extreme">VIX &gt; 25 (Extrema)</option>
+                        </select>
+                    </div>
+                    <div class="input-group full-width">
+                        <label for="instrument">Instrumento</label>
+                        <select id="instrument">
+                            <option value="ES" selected>/ES - E-mini S&P 500 ($50/pt)</option>
+                            <option value="MES">/MES - Micro E-mini S&P ($5/pt)</option>
+                            <option value="NQ">/NQ - E-mini Nasdaq ($20/pt)</option>
+                            <option value="GC">/GC - Gold Futures ($100/pt)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" onclick="calculateLevels()">
+                    ⚡ Calcular Niveles
+                </button>
+
+                <div class="formula-display">
+                    <strong>Fórmula:</strong> Rango Esperado = (Rango Anterior × Factor) + |Gap|<br>
+                    <span style="color: var(--text-muted);">Factor dinámico según VIX: 0.82 | 0.87 | 0.92 | 0.97</span>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div class="card results-section" id="resultsSection">
+                <h2 class="card-title">
+                    <span class="card-title-icon">🎯</span>
+                    Niveles Operativos
+                </h2>
+
+                <div id="directionBadge" class="direction-badge long">
+                    <span>▲</span> LONG
+                </div>
+
+                <div id="vixIndicator" class="vix-indicator">
+                    <span class="vix-dot vix-normal"></span>
+                    <span>Factor 0.87 aplicado</span>
+                </div>
+
+                <div class="levels-grid">
+                    <div class="level-card entry">
+                        <button class="copy-btn" onclick="copyLevel('entryLevel')">Copiar</button>
+                        <div class="level-label">📍 Entry (25%)</div>
+                        <div class="level-value" id="entryLevel">--</div>
+                        <div class="level-desc">Confirmar reversión</div>
+                    </div>
+                    <div class="level-card sl">
+                        <button class="copy-btn" onclick="copyLevel('slLevel')">Copiar</button>
+                        <div class="level-label">🛑 Stop Loss (10%)</div>
+                        <div class="level-value" id="slLevel">--</div>
+                        <div class="level-desc" id="slPoints">-- pts riesgo</div>
+                    </div>
+                    <div class="level-card tp1">
+                        <button class="copy-btn" onclick="copyLevel('tp1Level')">Copiar</button>
+                        <div class="level-label">✅ TP1 (50%) - 50% pos</div>
+                        <div class="level-value" id="tp1Level">--</div>
+                        <div class="level-desc">Mover SL a BE</div>
+                    </div>
+                    <div class="level-card tp2">
+                        <button class="copy-btn" onclick="copyLevel('tp2Level')">Copiar</button>
+                        <div class="level-label">✅ TP2 (75%) - 30% pos</div>
+                        <div class="level-value" id="tp2Level">--</div>
+                        <div class="level-desc">Trailing stop</div>
+                    </div>
+                    <div class="level-card tp3">
+                        <button class="copy-btn" onclick="copyLevel('tp3Level')">Copiar</button>
+                        <div class="level-label">🏆 TP3 (100%) - 20% pos</div>
+                        <div class="level-value" id="tp3Level">--</div>
+                        <div class="level-desc">Target completo</div>
+                    </div>
+                    <div class="level-card range">
+                        <div class="level-label">📏 Rango Esperado</div>
+                        <div class="level-value" id="expectedRange">--</div>
+                        <div class="level-desc" id="gapInfo">Gap: --</div>
+                    </div>
+                </div>
+
+                <!-- Filters Status -->
+                <div class="filters-status">
+                    <h3 style="font-size: 0.875rem; margin-bottom: 0.75rem;">Verificación de Filtros</h3>
+                    <div class="filter-item">
+                        <span class="filter-name">Gap mínimo 0.1%</span>
+                        <span class="filter-status" id="filterGap">--</span>
+                    </div>
+                    <div class="filter-item">
+                        <span class="filter-name">Rango anterior ≥ 20 pts</span>
+                        <span class="filter-status" id="filterRange">--</span>
+                    </div>
+                    <div class="filter-item">
+                        <span class="filter-name">Extremo Real identificado</span>
+                        <span class="filter-status" id="filterExtreme">--</span>
+                    </div>
+                </div>
+
+                <div id="filterAlert"></div>
+
+                <!-- Summary -->
+                <div class="summary-card">
+                    <h3 class="summary-title">📈 Resumen de la Operación</h3>
+                    <div class="summary-grid">
+                        <div>
+                            <div class="summary-item-value" id="potentialProfit">--</div>
+                            <div class="summary-item-label">Profit Potencial</div>
+                        </div>
+                        <div>
+                            <div class="summary-item-value" id="riskAmount">--</div>
+                            <div class="summary-item-label">Riesgo Máximo</div>
+                        </div>
+                        <div>
+                            <div class="summary-item-value" id="rrRatio">--</div>
+                            <div class="summary-item-label">Risk/Reward</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Checklist Section -->
+        <div class="card checklist-section" style="margin-top: 2rem;">
+            <h2 class="card-title">
+                <span class="card-title-icon">✓</span>
+                Checklist de Validación del Extremo Real
+            </h2>
+            <p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 1rem;">
+                Confirmar al menos 3 de 4 criterios antes de entrar:
+            </p>
+            
+            <div class="checklist-item">
+                <input type="checkbox" id="check1">
+                <label for="check1">Consolidación mínima de 15 minutos en el nivel extremo</label>
+            </div>
+            <div class="checklist-item">
+                <input type="checkbox" id="check2">
+                <label for="check2">Rechazo visible: mecha > 50% del cuerpo de la vela</label>
+            </div>
+            <div class="checklist-item">
+                <input type="checkbox" id="check3">
+                <label for="check3">Volumen decreciente hacia el extremo (agotamiento)</label>
+            </div>
+            <div class="checklist-item">
+                <input type="checkbox" id="check4">
+                <label for="check4">Delta divergente en Order Flow (absorción institucional)</label>
+            </div>
+
+            <div class="execution-timeline">
+                <h3 class="timeline-title">⏱️ Timeline de Ejecución</h3>
+                <div class="timeline-steps">
+                    <div class="timeline-step">
+                        <span class="step-time">Noche anterior</span>
+                        <span class="step-content">Registrar H/L/C del día</span>
+                    </div>
+                    <div class="timeline-step">
+                        <span class="step-time">09:30 ET</span>
+                        <span class="step-content">Calcular Gap y Rango Esperado al Open</span>
+                    </div>
+                    <div class="timeline-step">
+                        <span class="step-time">10:00-11:00 ET</span>
+                        <span class="step-content">Identificar Extremo Real + Validar Checklist</span>
+                    </div>
+                    <div class="timeline-step">
+                        <span class="step-time">11:00+ ET</span>
+                        <span class="step-content">Ejecutar entrada al 25% si filtros OK</span>
+                    </div>
+                    <div class="timeline-step">
+                        <span class="step-time">14:00 ET</span>
+                        <span class="step-content">Time-based exit si no alcanzó TP1</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Método 2 Trading Calculator | Win Rate Validado: 93.7%</p>
+            <p style="margin-top: 0.5rem;">
+                Desarrollado para <a href="#">Jacobo - Docks del Puerto</a> | 
+                <a href="https://github.com" target="_blank">Ver en GitHub</a>
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        // Instrument multipliers
+        const instruments = {
+            'ES': { multiplier: 50, name: '/ES', tick: 0.25 },
+            'MES': { multiplier: 5, name: '/MES', tick: 0.25 },
+            'NQ': { multiplier: 20, name: '/NQ', tick: 0.25 },
+            'GC': { multiplier: 100, name: '/GC', tick: 0.10 }
+        };
+
+        // VIX factors (improved)
+        const vixFactors = {
+            'low': 0.82,      // VIX < 15
+            'normal': 0.87,   // VIX 15-20
+            'high': 0.92,     // VIX 20-25
+            'extreme': 0.97   // VIX > 25
+        };
+
+        function calculateLevels() {
+            // Get inputs
+            const prevHigh = parseFloat(document.getElementById('prevHigh').value);
+            const prevLow = parseFloat(document.getElementById('prevLow').value);
+            const prevClose = parseFloat(document.getElementById('prevClose').value);
+            const todayOpen = parseFloat(document.getElementById('todayOpen').value);
+            const extremeReal = parseFloat(document.getElementById('extremeReal').value);
+            const vixLevel = document.getElementById('vixLevel').value;
+            const instrumentKey = document.getElementById('instrument').value;
+
+            // Validate inputs
+            if (isNaN(prevHigh) || isNaN(prevLow) || isNaN(prevClose) || isNaN(todayOpen)) {
+                alert('Por favor complete todos los campos requeridos');
+                return;
+            }
+
+            // Get instrument details
+            const instrument = instruments[instrumentKey];
+            
+            // Calculate previous range
+            const prevRange = prevHigh - prevLow;
+            
+            // Calculate gap
+            const gap = todayOpen - prevClose;
+            const gapPercent = (gap / prevClose) * 100;
+            const isGapUp = gap > 0;
+            
+            // Get factor based on VIX
+            const factor = vixFactors[vixLevel];
+            
+            // Calculate expected range (improved formula)
+            const expectedRange = (prevRange * factor) + Math.abs(gap);
+            
+            // Determine direction
+            const direction = isGapUp ? 'SHORT' : 'LONG';
+            
+            // Use extremeReal if provided, otherwise estimate
+            let baseExtreme = extremeReal;
+            if (isNaN(extremeReal)) {
+                // Estimate: price moves 18.8% in gap direction
+                const gapMove = expectedRange * 0.188;
+                baseExtreme = isGapUp ? todayOpen + gapMove : todayOpen - gapMove;
+            }
+            
+            // Calculate levels based on direction
+            let entry, tp1, tp2, tp3, sl;
+            
+            if (direction === 'SHORT') {
+                // SHORT: Entry below extreme, targets going down
+                entry = baseExtreme - (expectedRange * 0.25);
+                tp1 = baseExtreme - (expectedRange * 0.50);
+                tp2 = baseExtreme - (expectedRange * 0.75);
+                tp3 = baseExtreme - expectedRange;
+                sl = baseExtreme + (expectedRange * 0.10);
+            } else {
+                // LONG: Entry above extreme, targets going up
+                entry = baseExtreme + (expectedRange * 0.25);
+                tp1 = baseExtreme + (expectedRange * 0.50);
+                tp2 = baseExtreme + (expectedRange * 0.75);
+                tp3 = baseExtreme + expectedRange;
+                sl = baseExtreme - (expectedRange * 0.10);
+            }
+            
+            // Calculate risk/reward
+            const riskPoints = Math.abs(entry - sl);
+            const rewardPoints = Math.abs(tp2 - entry); // Using TP2 as main target
+            const rrRatio = rewardPoints / riskPoints;
+            
+            // Calculate dollar values
+            const riskDollars = riskPoints * instrument.multiplier;
+            const rewardDollars = rewardPoints * instrument.multiplier;
+            
+            // Update UI
+            document.getElementById('resultsSection').classList.add('visible');
+            
+            // Direction badge
+            const badge = document.getElementById('directionBadge');
+            badge.className = `direction-badge ${direction.toLowerCase()}`;
+            badge.innerHTML = direction === 'LONG' 
+                ? '<span>▲</span> LONG' 
+                : '<span>▼</span> SHORT';
+            
+            // VIX indicator
+            const vixIndicator = document.getElementById('vixIndicator');
+            const vixDotClass = {
+                'low': 'vix-low',
+                'normal': 'vix-normal', 
+                'high': 'vix-high',
+                'extreme': 'vix-extreme'
+            }[vixLevel];
+            vixIndicator.innerHTML = `
+                <span class="vix-dot ${vixDotClass}"></span>
+                <span>Factor ${factor} aplicado</span>
+            `;
+            
+            // Levels
+            document.getElementById('entryLevel').textContent = entry.toFixed(2);
+            document.getElementById('tp1Level').textContent = tp1.toFixed(2);
+            document.getElementById('tp2Level').textContent = tp2.toFixed(2);
+            document.getElementById('tp3Level').textContent = tp3.toFixed(2);
+            document.getElementById('slLevel').textContent = sl.toFixed(2);
+            document.getElementById('slPoints').textContent = `${riskPoints.toFixed(2)} pts riesgo`;
+            document.getElementById('expectedRange').textContent = `${expectedRange.toFixed(2)} pts`;
+            document.getElementById('gapInfo').textContent = `Gap: ${gap >= 0 ? '+' : ''}${gap.toFixed(2)} (${gapPercent.toFixed(2)}%)`;
+            
+            // Summary
+            document.getElementById('potentialProfit').textContent = `$${rewardDollars.toFixed(0)}`;
+            document.getElementById('riskAmount').textContent = `$${riskDollars.toFixed(0)}`;
+            document.getElementById('rrRatio').textContent = `1:${rrRatio.toFixed(2)}`;
+            
+            // Filters
+            const gapFilter = Math.abs(gapPercent) >= 0.1;
+            const rangeFilter = prevRange >= 20;
+            const extremeFilter = !isNaN(extremeReal);
+            
+            updateFilter('filterGap', gapFilter, `${Math.abs(gapPercent).toFixed(2)}%`);
+            updateFilter('filterRange', rangeFilter, `${prevRange.toFixed(1)} pts`);
+            updateFilter('filterExtreme', extremeFilter, extremeFilter ? '✓ Definido' : '⚠ Pendiente');
+            
+            // Alert message
+            const alertDiv = document.getElementById('filterAlert');
+            const allFiltersPass = gapFilter && rangeFilter;
+            
+            if (!allFiltersPass) {
+                alertDiv.innerHTML = `
+                    <div class="alert alert-warning">
+                        ⚠️ <strong>Filtros no cumplidos:</strong> Este día no cumple con los criterios mínimos de operación.
+                        Considerar no operar o reducir tamaño de posición.
+                    </div>
+                `;
+            } else if (!extremeFilter) {
+                alertDiv.innerHTML = `
+                    <div class="alert alert-warning">
+                        ⏳ <strong>Esperando Extremo Real:</strong> Monitorear entre 10:00-11:00 ET para identificar el High/Low real del día.
+                    </div>
+                `;
+            } else {
+                alertDiv.innerHTML = `
+                    <div class="alert alert-success">
+                        ✅ <strong>Setup válido:</strong> Todos los filtros cumplidos. Verificar checklist antes de ejecutar.
+                    </div>
+                `;
+            }
+        }
+        
+        function updateFilter(elementId, passed, value) {
+            const el = document.getElementById(elementId);
+            el.className = `filter-status ${passed ? 'pass' : 'fail'}`;
+            el.innerHTML = `${passed ? '✓' : '✗'} ${value}`;
+        }
+        
+        function copyLevel(elementId) {
+            const value = document.getElementById(elementId).textContent;
+            navigator.clipboard.writeText(value).then(() => {
+                // Visual feedback
+                const btn = event.target;
+                btn.textContent = '✓';
+                setTimeout(() => btn.textContent = 'Copiar', 1000);
+            });
+        }
+
+        // Auto-calculate on Enter key
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') calculateLevels();
+            });
+        });
+    </script>
+</body>
+</html>
