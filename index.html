@@ -856,31 +856,31 @@
 
                 <div class="levels-grid">
                     <div class="level-card entry">
-                        <button class="copy-btn" onclick="copyLevel('entryLevel')">Copy</button>
+                        <button class="copy-btn" onclick="copyLevel(event, 'entryLevel')">Copy</button>
                         <div class="level-label">Entry (18%)</div>
                         <div class="level-value" id="entryLevel">--</div>
                         <div class="level-desc">Confirmar reversión</div>
                     </div>
                     <div class="level-card sl">
-                        <button class="copy-btn" onclick="copyLevel('slLevel')">Copy</button>
+                        <button class="copy-btn" onclick="copyLevel(event, 'slLevel')">Copy</button>
                         <div class="level-label">Stop Loss (12%)</div>
                         <div class="level-value" id="slLevel">--</div>
                         <div class="level-desc" id="slPoints">-- pts riesgo</div>
                     </div>
                     <div class="level-card tp1">
-                        <button class="copy-btn" onclick="copyLevel('tp1Level')">Copy</button>
+                        <button class="copy-btn" onclick="copyLevel(event, 'tp1Level')">Copy</button>
                         <div class="level-label">TP1 (50%) - Cerrar 50%</div>
                         <div class="level-value" id="tp1Level">--</div>
                         <div class="level-desc">Mover SL a BE</div>
                     </div>
                     <div class="level-card tp2">
-                        <button class="copy-btn" onclick="copyLevel('tp2Level')">Copy</button>
+                        <button class="copy-btn" onclick="copyLevel(event, 'tp2Level')">Copy</button>
                         <div class="level-label">TP2 (75%) - Cerrar 30%</div>
                         <div class="level-value" id="tp2Level">--</div>
                         <div class="level-desc">Trailing stop</div>
                     </div>
                     <div class="level-card tp3">
-                        <button class="copy-btn" onclick="copyLevel('tp3Level')">Copy</button>
+                        <button class="copy-btn" onclick="copyLevel(event, 'tp3Level')">Copy</button>
                         <div class="level-label">TP3 (90%) - Cerrar 20%</div>
                         <div class="level-value" id="tp3Level">--</div>
                         <div class="level-desc">Target final</div>
@@ -1184,11 +1184,16 @@
             el.innerHTML = `${icon} ${value}`;
         }
 
-        function copyLevel(elementId) {
+        function copyLevel(event, elementId) {
             const value = document.getElementById(elementId).textContent;
             navigator.clipboard.writeText(value).then(() => {
                 const btn = event.target;
                 btn.textContent = '✓';
+                setTimeout(() => btn.textContent = 'Copy', 800);
+            }).catch((err) => {
+                console.error('Failed to copy to clipboard:', err);
+                const btn = event.target;
+                btn.textContent = '✗';
                 setTimeout(() => btn.textContent = 'Copy', 800);
             });
         }
