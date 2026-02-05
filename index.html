@@ -798,13 +798,13 @@
                             Modo Entry
                             <span class="tooltip">
                                 <i class="info-icon">?</i>
-                                <span class="tooltip-text">Agresivo: 15% (Gap DOWN). Estándar: 18%. Conservador: 22% (Gap UP con baja confianza).</span>
+                                <span class="tooltip-text">Agresivo: 5 pts del extremo (Gap DOWN). Estándar: 6.5 pts. Conservador: 8 pts (Gap UP / menor confianza).</span>
                             </span>
                         </label>
                         <select id="entryMode">
-                            <option value="aggressive">Agresivo (15%) - Gap DOWN</option>
-                            <option value="standard" selected>Estándar (18%)</option>
-                            <option value="conservative">Conservador (22%) - Gap UP</option>
+                            <option value="aggressive">Agresivo (5 pts) - Gap DOWN</option>
+                            <option value="standard" selected>Estándar (6.5 pts)</option>
+                            <option value="conservative">Conservador (8 pts) - Gap UP</option>
                         </select>
                     </div>
                     <div class="input-group full-width">
@@ -1017,11 +1017,11 @@
             'extreme': 0.97
         };
 
-        // Entry modes based on analysis
+        // Entry modes - fixed point distance from extreme
         const entryModes = {
-            'aggressive': { entry: 0.15, sl: 0.10, label: '15%' },   // Gap DOWN preferido
-            'standard': { entry: 0.18, sl: 0.12, label: '18%' },     // Balance
-            'conservative': { entry: 0.22, sl: 0.14, label: '22%' }  // Gap UP / menor confianza
+            'aggressive': { entry: 5.0, sl: 3.0, label: '5 pts' },      // Gap DOWN preferido
+            'standard': { entry: 6.5, sl: 3.5, label: '6.5 pts' },      // Balance
+            'conservative': { entry: 8.0, sl: 4.0, label: '8 pts' }     // Gap UP / menor confianza
         };
 
         // OPTIMIZED PARAMETERS based on real backtest analysis
@@ -1073,21 +1073,21 @@
                 baseExtreme = isGapUp ? todayOpen + gapMove : todayOpen - gapMove;
             }
 
-            // Calculate levels with dynamic entry mode
-            const entryPct = entryMode.entry;
-            const slPct = entryMode.sl;
-            
+            // Calculate levels - fixed point distance from extreme
+            const entryPts = entryMode.entry;
+            const slPts = entryMode.sl;
+
             let entry, tp1, tp2, tp3, sl;
-            
+
             if (direction === 'SHORT') {
-                entry = baseExtreme - (expectedRange * entryPct);
-                sl = baseExtreme + (expectedRange * slPct);
+                entry = baseExtreme - entryPts;
+                sl = baseExtreme + slPts;
                 tp1 = baseExtreme - (expectedRange * params.tp1Pct);
                 tp2 = baseExtreme - (expectedRange * params.tp2Pct);
                 tp3 = baseExtreme - (expectedRange * params.tp3Pct);
             } else {
-                entry = baseExtreme + (expectedRange * entryPct);
-                sl = baseExtreme - (expectedRange * slPct);
+                entry = baseExtreme + entryPts;
+                sl = baseExtreme - slPts;
                 tp1 = baseExtreme + (expectedRange * params.tp1Pct);
                 tp2 = baseExtreme + (expectedRange * params.tp2Pct);
                 tp3 = baseExtreme + (expectedRange * params.tp3Pct);
@@ -1104,7 +1104,7 @@
 
             // Update entry label dynamically
             document.querySelector('.level-card.entry .level-label').textContent = `Entry (${entryMode.label})`;
-            document.querySelector('.level-card.sl .level-label').textContent = `Stop Loss (${(slPct * 100).toFixed(0)}%)`;
+            document.querySelector('.level-card.sl .level-label').textContent = `Stop Loss (${slPts} pts)`;
 
             // Direction badge
             const badge = document.getElementById('directionBadge');
