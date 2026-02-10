@@ -1,0 +1,12 @@
+{
+  "name": "trading-app",
+  "version": "2.0.0",
+  "description": "Gap Reversal Trading Calculator",
+  "scripts": {
+    "test": "jest --verbose"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0"
+  }
+}
