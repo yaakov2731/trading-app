@@ -1000,40 +1000,8 @@
         </footer>
     </div>
 
+    <script src="calculator.js"></script>
     <script>
-        // Instrument multipliers
-        const instruments = {
-            'ES': { multiplier: 50, name: '/ES', tick: 0.25 },
-            'MES': { multiplier: 5, name: '/MES', tick: 0.25 },
-            'NQ': { multiplier: 20, name: '/NQ', tick: 0.25 },
-            'GC': { multiplier: 100, name: '/GC', tick: 0.10 }
-        };
-
-        // VIX factors (optimized based on backtest)
-        const vixFactors = {
-            'low': 0.82,
-            'normal': 0.87,
-            'high': 0.92,
-            'extreme': 0.97
-        };
-
-        // Entry modes - fixed point distance from extreme
-        const entryModes = {
-            'aggressive': { entry: 5.0, sl: 3.0, label: '5 pts' },      // Gap DOWN preferido
-            'standard': { entry: 6.5, sl: 3.5, label: '6.5 pts' },      // Balance
-            'conservative': { entry: 8.0, sl: 4.0, label: '8 pts' }     // Gap UP / menor confianza
-        };
-
-        // OPTIMIZED PARAMETERS based on real backtest analysis
-        const params = {
-            tp1Pct: 0.50,        // 50% - primer target
-            tp2Pct: 0.75,        // 75% - segundo target
-            tp3Pct: 0.90,        // 90% - target final (mediana de reversión)
-            minGapPct: 0.15,     // 0.15% mínimo
-            minPrevRange: 25,    // 25 pts mínimo
-            gapMoveEstimate: 0.42 // 42% mediana real de mov. en dir gap
-        };
-
         function calculateLevels() {
             const prevHigh = parseFloat(document.getElementById('prevHigh').value);
             const prevLow = parseFloat(document.getElementById('prevLow').value);
