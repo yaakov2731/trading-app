@@ -107,6 +107,14 @@ describe('computeLevels – input validation', () => {
         expect(computeLevels(inputs({ todayOpen: NaN }))).toBeNull();
     });
 
+    test('returns null when prevHigh is lower than prevLow', () => {
+        expect(computeLevels(inputs({ prevHigh: 6040, prevLow: 6050 }))).toBeNull();
+    });
+
+    test('returns null when prevClose is 0', () => {
+        expect(computeLevels(inputs({ prevClose: 0 }))).toBeNull();
+    });
+
     test('returns null when all required inputs are NaN', () => {
         expect(computeLevels(inputs({ prevHigh: NaN, prevLow: NaN, prevClose: NaN, todayOpen: NaN }))).toBeNull();
     });
@@ -405,13 +413,11 @@ describe('computeLevels – edge cases', () => {
         expect(result).not.toBeNull();
     });
 
-    test('prevClose of zero causes Infinity gapPercent but still returns result', () => {
+    test('prevClose of zero is rejected to avoid invalid percentage math', () => {
         const result = computeLevels(inputs({
             prevHigh: 10, prevLow: 5, prevClose: 0, todayOpen: 5, extremeReal: 4
         }));
-        // gap / prevClose = 5 / 0 = Infinity
-        expect(result).not.toBeNull();
-        expect(result.gapPercent).toBe(Infinity);
+        expect(result).toBeNull();
     });
 
     test('equal prevHigh and prevLow (zero range)', () => {

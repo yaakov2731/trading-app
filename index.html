@@ -1017,55 +1017,51 @@
                 return;
             }
 
-            const instrument = instruments[instrumentKey];
-            const entryMode = entryModes[entryModeKey];
-            const prevRange = prevHigh - prevLow;
-            const gap = todayOpen - prevClose;
-            const gapPercent = (gap / prevClose) * 100;
-            const isGapUp = gap > 0;
-            const factor = vixFactors[vixLevel];
-            const expectedRange = (prevRange * factor) + Math.abs(gap);
-            const direction = isGapUp ? 'SHORT' : 'LONG';
-
-            // Auto-suggest entry mode based on gap type
-            if (isGapUp && entryModeKey === 'aggressive') {
-                document.getElementById('entryMode').value = 'standard';
-            } else if (!isGapUp && entryModeKey === 'conservative') {
-                document.getElementById('entryMode').value = 'aggressive';
+            const suggestedMode = suggestEntryMode(todayOpen > prevClose, entryModeKey);
+            if (suggestedMode) {
+                document.getElementById('entryMode').value = suggestedMode;
             }
 
-            // Estimate extreme if not provided
-            let baseExtreme = extremeReal;
-            if (isNaN(extremeReal)) {
-                const gapMove = expectedRange * params.gapMoveEstimate;
-                baseExtreme = isGapUp ? todayOpen + gapMove : todayOpen - gapMove;
+            const finalEntryModeKey = document.getElementById('entryMode').value;
+            const result = computeLevels({
+                prevHigh,
+                prevLow,
+                prevClose,
+                todayOpen,
+                extremeReal,
+                vixLevel,
+                instrumentKey,
+                entryModeKey: finalEntryModeKey
+            });
+
+            if (!result) {
+                alert('Datos inválidos. Verifique que High >= Low y que Close anterior no sea 0.');
+                return;
             }
 
-            // Calculate levels - fixed point distance from extreme
-            const entryPts = entryMode.entry;
-            const slPts = entryMode.sl;
-
-            let entry, tp1, tp2, tp3, sl;
-
-            if (direction === 'SHORT') {
-                entry = baseExtreme - entryPts;
-                sl = baseExtreme + slPts;
-                tp1 = baseExtreme - (expectedRange * params.tp1Pct);
-                tp2 = baseExtreme - (expectedRange * params.tp2Pct);
-                tp3 = baseExtreme - (expectedRange * params.tp3Pct);
-            } else {
-                entry = baseExtreme + entryPts;
-                sl = baseExtreme - slPts;
-                tp1 = baseExtreme + (expectedRange * params.tp1Pct);
-                tp2 = baseExtreme + (expectedRange * params.tp2Pct);
-                tp3 = baseExtreme + (expectedRange * params.tp3Pct);
-            }
-
-            const riskPoints = Math.abs(entry - sl);
-            const rewardPoints = Math.abs(tp2 - entry);
-            const rrRatio = rewardPoints / riskPoints;
-            const riskDollars = riskPoints * instrument.multiplier;
-            const rewardDollars = rewardPoints * instrument.multiplier;
+            const {
+                instrument,
+                entryMode,
+                prevRange,
+                gap,
+                gapPercent,
+                isGapUp,
+                expectedRange,
+                factor,
+                direction,
+                entry,
+                tp1,
+                tp2,
+                tp3,
+                sl,
+                slPts,
+                riskPoints,
+                rewardPoints,
+                rrRatio,
+                riskDollars,
+                rewardDollars,
+                filters
+            } = result;
 
             // Update UI
             document.getElementById('resultsSection').classList.add('visible');
@@ -1103,33 +1099,29 @@
             document.getElementById('rrRatio').textContent = `1:${rrRatio.toFixed(2)}`;
 
             // Filters (STRICTER)
-            const gapFilter = Math.abs(gapPercent) >= params.minGapPct;
-            const rangeFilter = prevRange >= params.minPrevRange;
-            const gapTypeFilter = !isGapUp; // Gap DOWN preferred (100% fill rate vs 64.7%)
-            const extremeFilter = !isNaN(extremeReal);
+            const { gapFilter, rangeFilter, gapTypeFilter, extremeFilter, alertType } = filters;
 
             updateFilter('filterGap', gapFilter, `${Math.abs(gapPercent).toFixed(2)}%`);
             updateFilter('filterRange', rangeFilter, `${prevRange.toFixed(0)} pts`);
-            updateFilter('filterGapType', gapTypeFilter, isGapUp ? 'UP (64% fill)' : 'DOWN (100% fill)', gapTypeFilter ? 'pass' : 'warn');
-            updateFilter('filterExtreme', extremeFilter, extremeFilter ? '✓ Definido' : 'Pendiente', extremeFilter ? 'pass' : 'warn');
+            updateFilter('filterGapType', gapTypeFilter, isGapUp ? 'UP (64% fill)' : 'DOWN (100% fill)', getFilterStatusClass(gapTypeFilter, gapTypeFilter ? 'pass' : 'warn'));
+            updateFilter('filterExtreme', extremeFilter, extremeFilter ? '✓ Definido' : 'Pendiente', getFilterStatusClass(extremeFilter, extremeFilter ? 'pass' : 'warn'));
 
             // Alert
             const alertDiv = document.getElementById('filterAlert');
-            const criticalPass = gapFilter && rangeFilter;
             
-            if (!criticalPass) {
+            if (alertType === 'danger') {
                 alertDiv.innerHTML = `
                     <div class="alert alert-danger">
                         <span>⛔</span>
                         <div><strong>Filtros críticos no cumplidos.</strong> Este día no cumple criterios mínimos. NO OPERAR.</div>
                     </div>`;
-            } else if (isGapUp) {
+            } else if (alertType === 'warning-gap-up') {
                 alertDiv.innerHTML = `
                     <div class="alert alert-warning">
                         <span>⚠️</span>
                         <div><strong>Gap UP detectado.</strong> Fill rate histórico: 64.7%. Considerar reducir tamaño de posición o skip.</div>
                     </div>`;
-            } else if (!extremeFilter) {
+            } else if (alertType === 'warning-pending') {
                 alertDiv.innerHTML = `
                     <div class="alert alert-warning">
                         <span>⏳</span>

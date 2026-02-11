@@ -36,7 +36,11 @@ const params = {
  * Returns null if required inputs are missing/NaN.
  */
 function computeLevels({ prevHigh, prevLow, prevClose, todayOpen, extremeReal, vixLevel, instrumentKey, entryModeKey }) {
-    if (isNaN(prevHigh) || isNaN(prevLow) || isNaN(prevClose) || isNaN(todayOpen)) {
+    if (!Number.isFinite(prevHigh) || !Number.isFinite(prevLow) || !Number.isFinite(prevClose) || !Number.isFinite(todayOpen)) {
+        return null;
+    }
+
+    if (prevHigh < prevLow || prevClose === 0) {
         return null;
     }
 
@@ -61,7 +65,7 @@ function computeLevels({ prevHigh, prevLow, prevClose, todayOpen, extremeReal, v
 
     // Estimate extreme if not provided
     let baseExtreme = extremeReal;
-    const hasExtremeReal = !isNaN(extremeReal) && extremeReal !== null && extremeReal !== undefined;
+    const hasExtremeReal = Number.isFinite(extremeReal);
     if (!hasExtremeReal) {
         const gapMove = expectedRange * params.gapMoveEstimate;
         baseExtreme = isGapUp ? todayOpen + gapMove : todayOpen - gapMove;
@@ -128,8 +132,10 @@ function computeLevels({ prevHigh, prevLow, prevClose, todayOpen, extremeReal, v
  * Compute filter results for a trade setup.
  */
 function computeFilters({ gapPercent, prevRange, isGapUp, extremeReal }) {
-    const gapFilter = Math.abs(gapPercent) >= params.minGapPct;
-    const rangeFilter = prevRange >= params.minPrevRange;
+    const normalizedGapPercent = Number.isFinite(gapPercent) ? gapPercent : 0;
+    const normalizedPrevRange = Number.isFinite(prevRange) ? prevRange : 0;
+    const gapFilter = Math.abs(normalizedGapPercent) >= params.minGapPct;
+    const rangeFilter = normalizedPrevRange >= params.minPrevRange;
     const gapTypeFilter = !isGapUp;
     const extremeFilter = !isNaN(extremeReal);
 
