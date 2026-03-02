@@ -19,138 +19,126 @@
             --text-muted: #71717a;
             --accent: #dc2626;
             --accent-light: #ef4444;
-            --accent-glow: rgba(220, 38, 38, 0.25);
-            --accent-dark: #991b1b;
+            --accent-glow: rgba(220,38,38,0.25);
             --green: #22c55e;
-            --green-glow: rgba(34, 197, 94, 0.2);
+            --green-glow: rgba(34,197,94,0.2);
             --yellow: #eab308;
             --blue: #3b82f6;
             --purple: #a855f7;
+            --orange: #f97316;
         }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin:0; padding:0; box-sizing:border-box; }
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'Inter', sans-serif;
             background: var(--bg-primary);
             color: var(--text-primary);
             min-height: 100vh;
             line-height: 1.5;
         }
+        .container { max-width: 1500px; margin: 0 auto; padding: 1.5rem; }
 
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 1.5rem;
-        }
-
+        /* HEADER */
         header {
             text-align: center;
             margin-bottom: 2rem;
             padding: 1.5rem 0;
             border-bottom: 1px solid var(--border);
         }
-
         .logo {
             font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: var(--accent);
             letter-spacing: 0.3em;
             text-transform: uppercase;
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.5rem;
             font-weight: 600;
         }
-
-        h1 {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            letter-spacing: -0.02em;
+        h1 { font-size: 1.8rem; font-weight: 700; letter-spacing: -0.02em; }
+        h1 span { color: var(--accent); }
+        .subtitle { color: var(--text-muted); margin-top: 0.4rem; font-size: 0.85rem; }
+        .methodology-note {
+            display: inline-block;
+            margin-top: 0.75rem;
+            padding: 0.4rem 1rem;
+            background: rgba(59,130,246,0.1);
+            border: 1px solid rgba(59,130,246,0.3);
+            border-radius: 6px;
+            font-size: 0.72rem;
+            color: var(--blue);
+            font-family: 'IBM Plex Mono', monospace;
         }
 
-        h1 span {
-            color: var(--accent);
-        }
-
-        .subtitle {
-            color: var(--text-muted);
-            margin-top: 0.5rem;
-            font-size: 0.9rem;
-        }
-
+        /* STATS BANNER */
         .stats-banner {
             display: flex;
             justify-content: center;
-            gap: 2rem;
+            gap: 1rem;
             margin-top: 1.5rem;
             flex-wrap: wrap;
         }
-
         .stat {
             text-align: center;
-            padding: 0.75rem 1.5rem;
+            padding: 0.6rem 1.2rem;
             background: var(--bg-secondary);
             border: 1px solid var(--border);
             border-radius: 8px;
+            min-width: 100px;
         }
-
         .stat-value {
             font-family: 'IBM Plex Mono', monospace;
-            font-size: 1.25rem;
+            font-size: 1.1rem;
             font-weight: 700;
-            color: var(--text-primary);
         }
-
-        .stat-value.highlight {
-            color: var(--accent);
-        }
-
+        .stat-value.green { color: var(--green); }
+        .stat-value.red   { color: var(--accent-light); }
+        .stat-value.blue  { color: var(--blue); }
+        .stat-value.yellow{ color: var(--yellow); }
         .stat-label {
-            font-size: 0.65rem;
+            font-size: 0.6rem;
             color: var(--text-muted);
             text-transform: uppercase;
-            letter-spacing: 0.1em;
-            margin-top: 0.25rem;
+            letter-spacing: 0.08em;
+            margin-top: 0.2rem;
         }
 
-        .badge {
-            display: inline-block;
-            font-size: 0.6rem;
-            padding: 0.2rem 0.5rem;
-            background: var(--accent);
-            color: white;
-            border-radius: 4px;
+        /* TABS */
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0;
+        }
+        .tab-btn {
+            font-family: 'Inter', sans-serif;
+            padding: 0.6rem 1.2rem;
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: var(--text-muted);
+            font-size: 0.8rem;
             font-weight: 600;
+            cursor: pointer;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-left: 0.5rem;
-            vertical-align: middle;
+            letter-spacing: 0.08em;
+            transition: all 0.15s;
+            margin-bottom: -1px;
         }
-
-        .main-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.5rem;
+        .tab-btn:hover { color: var(--text-secondary); }
+        .tab-btn.active {
+            color: var(--text-primary);
+            border-bottom-color: var(--accent);
         }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
 
-        @media (max-width: 1024px) {
-            .main-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
+        /* CARDS */
         .card {
             background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: 12px;
             padding: 1.5rem;
-            position: relative;
         }
-
         .card-header {
             display: flex;
             align-items: center;
@@ -159,9 +147,8 @@
             padding-bottom: 1rem;
             border-bottom: 1px solid var(--border);
         }
-
         .card-title {
-            font-size: 0.875rem;
+            font-size: 0.8rem;
             font-weight: 600;
             display: flex;
             align-items: center;
@@ -170,389 +157,327 @@
             letter-spacing: 0.05em;
             color: var(--text-secondary);
         }
-
         .card-title-icon {
-            width: 28px;
-            height: 28px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 26px; height: 26px;
+            display: flex; align-items: center; justify-content: center;
             background: var(--accent);
             border-radius: 6px;
-            font-size: 0.875rem;
+            font-size: 0.8rem;
         }
 
+        /* GRID LAYOUTS */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        .three-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1.5rem;
+        }
+        @media (max-width: 1200px) {
+            .main-grid { grid-template-columns: 1fr; }
+            .three-col { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 768px) {
+            .three-col { grid-template-columns: 1fr; }
+        }
+
+        /* INPUTS */
         .input-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 1rem;
+            gap: 0.875rem;
         }
-
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.4rem;
-        }
-
-        .input-group.full-width {
-            grid-column: span 2;
-        }
-
+        .input-group { display: flex; flex-direction: column; gap: 0.35rem; }
+        .input-group.full { grid-column: span 2; }
         label {
-            font-size: 0.7rem;
+            font-size: 0.68rem;
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.05em;
             font-weight: 500;
         }
-
         input, select {
             font-family: 'IBM Plex Mono', monospace;
             background: var(--bg-input);
             border: 1px solid var(--border);
             border-radius: 6px;
-            padding: 0.7rem 0.875rem;
+            padding: 0.65rem 0.8rem;
             color: var(--text-primary);
-            font-size: 0.9rem;
-            transition: all 0.15s ease;
+            font-size: 0.875rem;
+            transition: all 0.15s;
+            width: 100%;
         }
-
         input:focus, select:focus {
             outline: none;
             border-color: var(--accent);
             box-shadow: 0 0 0 3px var(--accent-glow);
         }
+        input::placeholder { color: var(--text-muted); }
+        select { cursor: pointer; }
+        select option { background: var(--bg-secondary); }
 
-        input::placeholder {
+        /* SECTION DIVIDER */
+        .section-divider {
+            font-size: 0.65rem;
             color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin: 1rem 0 0.75rem;
+            padding-bottom: 0.4rem;
+            border-bottom: 1px solid var(--border);
         }
 
-        select {
-            cursor: pointer;
-        }
-
-        select option {
-            background: var(--bg-secondary);
-            color: var(--text-primary);
-        }
-
+        /* BUTTON */
         .btn {
             font-family: 'Inter', sans-serif;
-            padding: 0.875rem 1.5rem;
+            padding: 0.8rem 1.5rem;
             border: none;
             border-radius: 6px;
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.15s ease;
+            transition: all 0.15s;
             text-transform: uppercase;
             letter-spacing: 0.1em;
         }
-
         .btn-primary {
             background: var(--accent);
             color: white;
             width: 100%;
             margin-top: 1.25rem;
         }
-
-        .btn-primary:hover {
-            background: var(--accent-light);
-            box-shadow: 0 4px 20px var(--accent-glow);
+        .btn-primary:hover { background: var(--accent-light); box-shadow: 0 4px 20px var(--accent-glow); }
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+            font-size: 0.7rem;
+            padding: 0.4rem 0.8rem;
         }
+        .btn-secondary:hover { background: var(--bg-hover); color: var(--text-primary); }
 
-        .btn-primary:active {
-            transform: scale(0.98);
-        }
-
+        /* FORMULA BOX */
         .formula-box {
             background: var(--bg-input);
             border: 1px solid var(--border);
             border-radius: 6px;
-            padding: 1rem;
+            padding: 0.875rem;
             margin-top: 1rem;
             font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.75rem;
+            font-size: 0.72rem;
         }
+        .formula-box code { color: var(--blue); display: block; margin-bottom: 0.3rem; }
+        .formula-box .note { color: var(--text-muted); font-size: 0.68rem; }
 
-        .formula-box code {
-            color: var(--accent-light);
-            display: block;
-            margin-bottom: 0.5rem;
-        }
-
-        .formula-box .note {
-            color: var(--text-muted);
-            font-size: 0.7rem;
-        }
-
-        .results-section {
-            display: none;
-        }
-
-        .results-section.visible {
-            display: block;
-            animation: fadeIn 0.25s ease;
-        }
-
+        /* RESULTS */
+        .results-section { display: none; }
+        .results-section.visible { display: block; animation: fadeIn 0.25s ease; }
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
+            from { opacity:0; transform: translateY(6px); }
+            to   { opacity:1; transform: translateY(0); }
         }
 
+        /* DIRECTION BADGE */
         .direction-badge {
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            padding: 0.5rem 1.25rem;
+            padding: 0.45rem 1.1rem;
             border-radius: 6px;
             font-family: 'IBM Plex Mono', monospace;
             font-weight: 700;
-            font-size: 1rem;
+            font-size: 0.95rem;
             margin-bottom: 1rem;
         }
+        .direction-badge.long  { background: rgba(34,197,94,0.12); border: 1px solid var(--green); color: var(--green); }
+        .direction-badge.short { background: rgba(220,38,38,0.12); border: 1px solid var(--accent); color: var(--accent-light); }
 
-        .direction-badge.long {
-            background: rgba(34, 197, 94, 0.15);
-            border: 1px solid var(--green);
-            color: var(--green);
-        }
-
-        .direction-badge.short {
-            background: rgba(220, 38, 38, 0.15);
-            border: 1px solid var(--accent);
-            color: var(--accent-light);
-        }
-
-        .meta-info {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 1.25rem;
-            flex-wrap: wrap;
-        }
-
+        /* META TAGS */
+        .meta-info { display: flex; gap: 0.6rem; margin-bottom: 1.1rem; flex-wrap: wrap; }
         .meta-tag {
             display: inline-flex;
             align-items: center;
-            gap: 0.4rem;
-            padding: 0.35rem 0.75rem;
+            gap: 0.35rem;
+            padding: 0.3rem 0.65rem;
             background: var(--bg-input);
             border-radius: 4px;
-            font-size: 0.7rem;
+            font-size: 0.68rem;
             color: var(--text-secondary);
+            border: 1px solid var(--border);
         }
+        .meta-tag .dot { width: 6px; height: 6px; border-radius: 50%; }
+        .wr-tag { border-color: rgba(34,197,94,0.3) !important; color: var(--green) !important; }
 
-        .meta-tag .dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-        }
-
-        .vix-low .dot { background: var(--green); }
-        .vix-normal .dot { background: var(--blue); }
-        .vix-high .dot { background: var(--yellow); }
-        .vix-extreme .dot { background: var(--accent); }
-
+        /* LEVELS GRID */
         .levels-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 0.75rem;
+            gap: 0.65rem;
         }
-
         .level-card {
             background: var(--bg-input);
             border: 1px solid var(--border);
             border-radius: 8px;
-            padding: 0.875rem;
+            padding: 0.8rem;
             position: relative;
-            border-left: 3px solid var(--border);
         }
-
-        .level-card.entry { border-left-color: var(--blue); }
-        .level-card.tp1 { border-left-color: var(--green); }
-        .level-card.tp2 { border-left-color: var(--green); }
-        .level-card.tp3 { border-left-color: var(--purple); }
-        .level-card.sl { border-left-color: var(--accent); }
-        .level-card.range { border-left-color: var(--yellow); }
-
+        .level-card.entry  { border-color: rgba(59,130,246,0.4); }
+        .level-card.sl     { border-color: rgba(220,38,38,0.4); }
+        .level-card.tp1    { border-color: rgba(34,197,94,0.25); }
+        .level-card.tp2    { border-color: rgba(34,197,94,0.4); }
+        .level-card.tp3    { border-color: rgba(34,197,94,0.6); }
         .level-label {
-            font-size: 0.65rem;
+            font-size: 0.62rem;
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.3rem;
         }
-
         .level-value {
             font-family: 'IBM Plex Mono', monospace;
-            font-size: 1.25rem;
+            font-size: 1.15rem;
             font-weight: 700;
             color: var(--text-primary);
         }
-
+        .level-card.entry .level-value  { color: var(--blue); }
+        .level-card.sl    .level-value  { color: var(--accent-light); }
+        .level-card.tp1   .level-value  { color: #4ade80; }
+        .level-card.tp2   .level-value  { color: var(--green); }
+        .level-card.tp3   .level-value  { color: #16a34a; }
         .level-desc {
-            font-size: 0.65rem;
+            font-size: 0.62rem;
             color: var(--text-muted);
-            margin-top: 0.25rem;
+            margin-top: 0.2rem;
         }
-
         .copy-btn {
             position: absolute;
             top: 0.5rem;
             right: 0.5rem;
-            background: var(--bg-secondary);
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.6rem;
+            padding: 0.2rem 0.45rem;
+            background: var(--bg-hover);
             border: 1px solid var(--border);
             border-radius: 3px;
-            padding: 0.15rem 0.4rem;
-            font-size: 0.55rem;
             color: var(--text-muted);
             cursor: pointer;
-            opacity: 0;
-            transition: all 0.15s;
-            font-family: 'Inter', sans-serif;
+            transition: all 0.1s;
         }
+        .copy-btn:hover { color: var(--text-primary); border-color: var(--border-light); }
 
-        .level-card:hover .copy-btn {
-            opacity: 1;
-        }
-
-        .copy-btn:hover {
-            color: var(--text-primary);
-            border-color: var(--accent);
-        }
-
-        .filters-section {
+        /* RANGE LEVELS SECTION */
+        .range-levels-section {
             margin-top: 1.25rem;
             padding: 1rem;
             background: var(--bg-input);
-            border-radius: 8px;
             border: 1px solid var(--border);
+            border-radius: 8px;
         }
-
-        .filters-title {
-            font-size: 0.7rem;
+        .range-levels-title {
+            font-size: 0.68rem;
             font-weight: 600;
             color: var(--text-secondary);
             text-transform: uppercase;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.08em;
             margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
+        .range-level-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.3rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            font-size: 0.72rem;
+        }
+        .range-level-row:last-child { border-bottom: none; }
+        .range-level-name { color: var(--text-muted); font-family: 'IBM Plex Mono', monospace; }
+        .range-level-value { color: var(--text-primary); font-family: 'IBM Plex Mono', monospace; font-weight: 600; }
+        .range-level-pct { color: var(--text-muted); font-size: 0.62rem; }
+        .range-level-row.current-zone {
+            background: rgba(59,130,246,0.08);
+            border-radius: 4px;
+            padding: 0.3rem 0.4rem;
+            border-bottom: none;
+        }
+        .range-level-row.current-zone .range-level-name { color: var(--blue); }
 
+        /* FILTERS */
+        .filters-section {
+            margin-top: 1.1rem;
+            padding: 0.875rem;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+        .filters-title {
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 0.6rem;
+        }
         .filter-item {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0.5rem 0;
-            border-bottom: 1px solid var(--border);
-            font-size: 0.8rem;
+            padding: 0.3rem 0;
+            font-size: 0.72rem;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
         }
-
-        .filter-item:last-child {
-            border-bottom: none;
-        }
-
-        .filter-name {
-            color: var(--text-secondary);
-        }
-
-        .filter-status {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.75rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-        }
-
+        .filter-item:last-child { border-bottom: none; }
+        .filter-name { color: var(--text-secondary); }
+        .filter-status { font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; font-weight: 600; }
         .filter-status.pass { color: var(--green); }
-        .filter-status.fail { color: var(--accent); }
+        .filter-status.fail { color: var(--accent-light); }
         .filter-status.warn { color: var(--yellow); }
 
+        /* ALERT */
         .alert {
-            padding: 0.875rem;
-            border-radius: 6px;
-            margin-top: 1rem;
-            font-size: 0.8rem;
             display: flex;
             align-items: flex-start;
-            gap: 0.5rem;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            margin-top: 1rem;
         }
+        .alert-success { background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.3); color: var(--green); }
+        .alert-warning { background: rgba(234,179,8,0.08); border: 1px solid rgba(234,179,8,0.3); color: var(--yellow); }
+        .alert-danger  { background: rgba(220,38,38,0.08); border: 1px solid rgba(220,38,38,0.3); color: var(--accent-light); }
 
-        .alert-warning {
-            background: rgba(234, 179, 8, 0.1);
-            border: 1px solid rgba(234, 179, 8, 0.3);
-            color: var(--yellow);
-        }
-
-        .alert-success {
-            background: rgba(34, 197, 94, 0.1);
-            border: 1px solid rgba(34, 197, 94, 0.3);
-            color: var(--green);
-        }
-
-        .alert-danger {
-            background: rgba(220, 38, 38, 0.1);
-            border: 1px solid rgba(220, 38, 38, 0.3);
-            color: var(--accent-light);
-        }
-
+        /* SUMMARY CARD */
         .summary-card {
-            background: var(--bg-secondary);
+            background: var(--bg-input);
             border: 1px solid var(--border);
             border-radius: 8px;
-            padding: 1.25rem;
-            margin-top: 1.25rem;
+            padding: 1rem;
+            margin-top: 1rem;
         }
-
         .summary-title {
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             font-weight: 600;
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            margin-bottom: 1rem;
+            margin-bottom: 0.875rem;
         }
-
-        .summary-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1rem;
-            text-align: center;
-        }
-
-        .summary-item-value {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 1.1rem;
-            font-weight: 700;
-        }
-
+        .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; text-align: center; }
+        .summary-item-value { font-family: 'IBM Plex Mono', monospace; font-size: 1rem; font-weight: 700; }
         .summary-item-value.profit { color: var(--green); }
-        .summary-item-value.risk { color: var(--accent-light); }
+        .summary-item-value.risk   { color: var(--accent-light); }
+        .summary-item-label { font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.2rem; }
 
-        .summary-item-label {
-            font-size: 0.6rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-top: 0.25rem;
-        }
-
-        .checklist-card {
-            margin-top: 1.5rem;
-        }
-
-        .checklist-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 0.5rem;
-        }
-
-        @media (max-width: 768px) {
-            .checklist-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
+        /* CHECKLIST */
+        .checklist-card { margin-top: 1.5rem; }
+        .checklist-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
+        @media (max-width: 768px) { .checklist-grid { grid-template-columns: 1fr; } }
         .checklist-item {
             display: flex;
             align-items: center;
@@ -564,346 +489,366 @@
             cursor: pointer;
             transition: all 0.15s;
         }
-
-        .checklist-item:hover {
-            border-color: var(--border-light);
-            background: var(--bg-hover);
-        }
-
-        .checklist-item input[type="checkbox"] {
-            width: 16px;
-            height: 16px;
-            accent-color: var(--accent);
-            cursor: pointer;
-        }
-
-        .checklist-item label {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            text-transform: none;
-            letter-spacing: normal;
-            cursor: pointer;
-            line-height: 1.3;
-        }
-
-        .checklist-item.checked {
-            border-color: var(--green);
-            background: rgba(34, 197, 94, 0.05);
-        }
-
-        .checklist-item.checked label {
-            color: var(--green);
-        }
-
-        .timeline-section {
-            margin-top: 1.25rem;
-            padding: 1rem;
-            background: var(--bg-input);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-        }
-
-        .timeline-title {
-            font-size: 0.7rem;
-            font-weight: 600;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: 0.75rem;
-        }
-
-        .timeline-step {
-            display: flex;
-            align-items: flex-start;
-            gap: 0.75rem;
-            padding: 0.4rem 0;
-        }
-
-        .step-time {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.65rem;
-            color: var(--accent-light);
-            min-width: 70px;
-            font-weight: 500;
-        }
-
-        .step-content {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-        }
-
+        .checklist-item:hover { border-color: var(--border-light); background: var(--bg-hover); }
+        .checklist-item input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent); cursor: pointer; }
+        .checklist-item label { font-size: 0.73rem; color: var(--text-secondary); text-transform: none; letter-spacing: normal; cursor: pointer; line-height: 1.3; }
+        .checklist-item.checked { border-color: var(--green); background: rgba(34,197,94,0.05); }
+        .checklist-item.checked label { color: var(--green); }
         .checklist-counter {
             font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             color: var(--text-muted);
-            padding: 0.25rem 0.5rem;
+            padding: 0.2rem 0.5rem;
             background: var(--bg-input);
             border-radius: 4px;
         }
+        .checklist-counter.ready { color: var(--green); background: rgba(34,197,94,0.1); }
 
-        .checklist-counter.ready {
-            color: var(--green);
-            background: rgba(34, 197, 94, 0.1);
+        /* TIMELINE */
+        .timeline-section { margin-top: 1.1rem; padding: 0.875rem; background: var(--bg-input); border: 1px solid var(--border); border-radius: 8px; }
+        .timeline-title { font-size: 0.65rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.6rem; }
+        .timeline-step { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.3rem 0; }
+        .step-time { font-family: 'IBM Plex Mono', monospace; font-size: 0.63rem; color: var(--accent-light); min-width: 70px; font-weight: 500; }
+        .step-content { font-size: 0.72rem; color: var(--text-secondary); }
+
+        /* BACKTEST TAB */
+        .backtest-header {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
         }
-
-        footer {
-            text-align: center;
-            padding: 2rem 0;
-            color: var(--text-muted);
-            font-size: 0.75rem;
-            border-top: 1px solid var(--border);
-            margin-top: 2rem;
-        }
-
-        footer a {
-            color: var(--accent);
-            text-decoration: none;
-        }
-
-        footer a:hover {
-            text-decoration: underline;
-        }
-
-        .version-tag {
-            display: inline-block;
-            font-size: 0.6rem;
-            padding: 0.15rem 0.4rem;
-            background: var(--bg-secondary);
+        @media (max-width: 900px) { .backtest-header { grid-template-columns: repeat(2, 1fr); } }
+        .bt-stat {
+            background: var(--bg-card);
             border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1rem;
+            text-align: center;
+        }
+        .bt-stat-value { font-family: 'IBM Plex Mono', monospace; font-size: 1.4rem; font-weight: 700; }
+        .bt-stat-label { font-size: 0.62rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 0.3rem; }
+        .bt-stat-sub { font-size: 0.65rem; color: var(--text-muted); margin-top: 0.2rem; }
+
+        .table-wrapper { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
+        th {
+            text-align: left;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.62rem;
             color: var(--text-muted);
-            border-radius: 3px;
-            margin-left: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--border);
+            font-weight: 600;
         }
+        td { padding: 0.5rem 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.04); font-family: 'IBM Plex Mono', monospace; }
+        tr:hover td { background: var(--bg-hover); }
+        .td-green { color: var(--green); }
+        .td-red   { color: var(--accent-light); }
+        .td-blue  { color: var(--blue); }
+        .td-yellow{ color: var(--yellow); }
 
-        .tooltip {
-            position: relative;
+        /* BAR CHART */
+        .bar-chart { margin-top: 0.5rem; }
+        .bar-row { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; font-size: 0.72rem; }
+        .bar-label { color: var(--text-secondary); min-width: 130px; font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; }
+        .bar-track { flex: 1; background: var(--bg-input); border-radius: 3px; height: 8px; overflow: hidden; }
+        .bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
+        .bar-pct { color: var(--text-muted); min-width: 40px; text-align: right; font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; }
+
+        /* YEAR TABLE */
+        .year-positive { color: var(--green); }
+        .year-negative { color: var(--accent-light); }
+
+        /* BADGE */
+        .badge {
             display: inline-block;
-            cursor: help;
+            font-size: 0.58rem;
+            padding: 0.18rem 0.45rem;
+            background: var(--accent);
+            color: white;
+            border-radius: 4px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-left: 0.4rem;
+            vertical-align: middle;
         }
+        .badge.blue { background: var(--blue); }
+        .badge.green { background: #16a34a; }
 
+        /* TOOLTIP */
+        .tooltip { position: relative; display: inline-block; cursor: help; }
         .tooltip .tooltip-text {
             visibility: hidden;
-            width: 200px;
+            width: 220px;
             background: var(--bg-secondary);
             color: var(--text-secondary);
-            font-size: 0.7rem;
+            font-size: 0.68rem;
             text-align: left;
             border-radius: 6px;
             padding: 0.5rem;
             position: absolute;
-            z-index: 1;
+            z-index: 10;
             bottom: 125%;
             left: 50%;
-            margin-left: -100px;
+            margin-left: -110px;
             opacity: 0;
             transition: opacity 0.2s;
             border: 1px solid var(--border);
+            pointer-events: none;
         }
-
-        .tooltip:hover .tooltip-text {
-            visibility: visible;
-            opacity: 1;
-        }
-
+        .tooltip:hover .tooltip-text { visibility: visible; opacity: 1; }
         .info-icon {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 14px;
-            height: 14px;
-            background: var(--border);
-            border-radius: 50%;
-            font-size: 0.55rem;
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 13px; height: 13px;
+            background: var(--border); border-radius: 50%;
+            font-size: 0.52rem; color: var(--text-muted);
+            margin-left: 0.2rem; font-style: normal;
+        }
+
+        /* FOOTER */
+        footer {
+            text-align: center;
+            padding: 1.5rem 0;
             color: var(--text-muted);
-            margin-left: 0.25rem;
-            font-style: normal;
+            font-size: 0.72rem;
+            border-top: 1px solid var(--border);
+            margin-top: 2rem;
+        }
+        .version-tag {
+            display: inline-block;
+            font-size: 0.58rem;
+            padding: 0.12rem 0.35rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            border-radius: 3px;
+            margin-left: 0.4rem;
+        }
+
+        /* DISCLAIMER */
+        .disclaimer {
+            margin-top: 1rem;
+            padding: 0.75rem 1rem;
+            background: rgba(234,179,8,0.05);
+            border: 1px solid rgba(234,179,8,0.2);
+            border-radius: 6px;
+            font-size: 0.68rem;
+            color: var(--text-muted);
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <div class="logo">Trading System</div>
-            <h1>Método 2 <span>Calculator</span></h1>
-            <p class="subtitle">Gap Reversal Strategy | Extremo Real + Rango Esperado</p>
-            <div class="stats-banner">
-                <div class="stat">
-                    <div class="stat-value highlight">87.0%</div>
-                    <div class="stat-label">Win Rate Backtested</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-value">7.08</div>
-                    <div class="stat-label">Profit Factor</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-value">$25,097</div>
-                    <div class="stat-label">P&L 3M (1 ct)</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-value">1:2.7</div>
-                    <div class="stat-label">Risk/Reward</div>
-                </div>
-            </div>
-        </header>
+<div class="container">
 
+    <!-- HEADER -->
+    <header>
+        <div class="logo">Trading System · ES Futures</div>
+        <h1>Método 2 <span>Gap Reversal</span></h1>
+        <p class="subtitle">GAP incluido en Rango del Día · Niveles por Fracciones de Rango</p>
+        <div class="methodology-note">
+            Rango Total = max(High, Open) − min(Low, Close_anterior) · El GAP es parte del rango
+        </div>
+        <div class="stats-banner">
+            <div class="stat">
+                <div class="stat-value blue">1,545</div>
+                <div class="stat-label">Trades (10 años)</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value yellow">36.1%</div>
+                <div class="stat-label">Win Rate Real</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value green">1.11</div>
+                <div class="stat-label">Profit Factor</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value green">$56,145</div>
+                <div class="stat-label">P&L 10 años (1 ct)</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">1:1.97</div>
+                <div class="stat-label">Avg RR (TP2)</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- TABS -->
+    <div class="tabs">
+        <button class="tab-btn active" onclick="showTab('calculator')">📊 Calculadora</button>
+        <button class="tab-btn" onclick="showTab('backtest')">📈 Backtest Real</button>
+        <button class="tab-btn" onclick="showTab('methodology')">📋 Metodología</button>
+    </div>
+
+    <!-- TAB: CALCULADORA -->
+    <div id="tab-calculator" class="tab-content active">
         <div class="main-grid">
-            <!-- Input Section -->
+
+            <!-- INPUT SECTION -->
             <div class="card">
                 <div class="card-header">
                     <h2 class="card-title">
                         <span class="card-title-icon">📊</span>
                         Datos de Entrada
                     </h2>
-                    <span class="badge">Optimizado</span>
+                    <span class="badge blue">v3.0</span>
                 </div>
-                
+
+                <div class="section-divider">Día Anterior (RTH)</div>
                 <div class="input-grid">
                     <div class="input-group">
-                        <label for="prevHigh">High Anterior</label>
-                        <input type="number" id="prevHigh" placeholder="6100.00" step="0.25">
+                        <label for="prevPrevClose">
+                            Close D-2
+                            <span class="tooltip"><i class="info-icon">?</i>
+                                <span class="tooltip-text">Close del día anterior al día anterior. Necesario para calcular el Rango Total (con gap) del día anterior.</span>
+                            </span>
+                        </label>
+                        <input type="number" id="prevPrevClose" placeholder="Ej: 6840.00" step="0.25">
                     </div>
                     <div class="input-group">
-                        <label for="prevLow">Low Anterior</label>
-                        <input type="number" id="prevLow" placeholder="6050.00" step="0.25">
+                        <label for="prevOpen">Open D-1</label>
+                        <input type="number" id="prevOpen" placeholder="Ej: 6855.00" step="0.25">
                     </div>
                     <div class="input-group">
-                        <label for="prevClose">Close Anterior</label>
-                        <input type="number" id="prevClose" placeholder="6080.00" step="0.25">
+                        <label for="prevHigh">High D-1</label>
+                        <input type="number" id="prevHigh" placeholder="Ej: 6911.00" step="0.25">
+                    </div>
+                    <div class="input-group">
+                        <label for="prevLow">Low D-1</label>
+                        <input type="number" id="prevLow" placeholder="Ej: 6768.00" step="0.25">
+                    </div>
+                    <div class="input-group">
+                        <label for="prevClose">Close D-1</label>
+                        <input type="number" id="prevClose" placeholder="Ej: 6884.00" step="0.25">
                     </div>
                     <div class="input-group">
                         <label for="todayOpen">Open Hoy</label>
-                        <input type="number" id="todayOpen" placeholder="6095.00" step="0.25">
+                        <input type="number" id="todayOpen" placeholder="Ej: 6953.00" step="0.25">
                     </div>
+                </div>
+
+                <div class="section-divider">Extremo Real (opcional pero recomendado)</div>
+                <div class="input-grid">
                     <div class="input-group">
                         <label for="extremeReal">
                             Extremo Real
-                            <span class="tooltip">
-                                <i class="info-icon">?</i>
-                                <span class="tooltip-text">High o Low formado después de 1-1.5h de apertura. Esperar consolidación de 15+ min para confirmar.</span>
+                            <span class="tooltip"><i class="info-icon">?</i>
+                                <span class="tooltip-text">High (Gap UP) o Low (Gap DOWN) formado en la primera hora RTH (9:30-10:30 ET). Esperar consolidación 15+ min para confirmar.</span>
                             </span>
                         </label>
                         <input type="number" id="extremeReal" placeholder="Opcional" step="0.25">
                     </div>
                     <div class="input-group">
-                        <label for="vixLevel">Nivel VIX</label>
-                        <select id="vixLevel">
-                            <option value="low">VIX &lt; 15 (Baja)</option>
-                            <option value="normal" selected>VIX 15-20 (Normal)</option>
-                            <option value="high">VIX 20-25 (Alta)</option>
-                            <option value="extreme">VIX &gt; 25 (Extrema)</option>
-                        </select>
-                    </div>
-                    <div class="input-group">
-                        <label for="entryMode">
-                            Modo Entry
-                            <span class="tooltip">
-                                <i class="info-icon">?</i>
-                                <span class="tooltip-text">Agresivo: 5 pts del extremo (Gap DOWN). Estándar: 6.5 pts. Conservador: 8 pts (Gap UP / menor confianza).</span>
-                            </span>
-                        </label>
+                        <label for="entryMode">Modo Entry</label>
                         <select id="entryMode">
-                            <option value="aggressive">Agresivo (5 pts) - Gap DOWN</option>
+                            <option value="aggressive">Agresivo (5 pts) — Gap DOWN</option>
                             <option value="standard" selected>Estándar (6.5 pts)</option>
-                            <option value="conservative">Conservador (8 pts) - Gap UP</option>
+                            <option value="conservative">Conservador (8 pts) — Gap UP</option>
                         </select>
                     </div>
-                    <div class="input-group full-width">
+                    <div class="input-group full">
                         <label for="instrument">Instrumento</label>
                         <select id="instrument">
-                            <option value="ES" selected>/ES - E-mini S&P 500 ($50/pt)</option>
-                            <option value="MES">/MES - Micro E-mini S&P ($5/pt)</option>
-                            <option value="NQ">/NQ - E-mini Nasdaq ($20/pt)</option>
-                            <option value="GC">/GC - Gold ($100/pt)</option>
+                            <option value="ES" selected>/ES — E-mini S&P 500 ($50/pt)</option>
+                            <option value="MES">/MES — Micro E-mini S&P ($5/pt)</option>
+                            <option value="NQ">/NQ — E-mini Nasdaq ($20/pt)</option>
+                            <option value="MNQ">/MNQ — Micro Nasdaq ($2/pt)</option>
+                            <option value="RTY">/RTY — Russell 2000 ($50/pt)</option>
                         </select>
                     </div>
                 </div>
 
                 <button class="btn btn-primary" onclick="calculateLevels()">
-                    Calcular Niveles
+                    Calcular Niveles →
                 </button>
 
                 <div class="formula-box">
-                    <code>Rango = (Rango Anterior × Factor) + |Gap|</code>
-                    <span class="note">Factor VIX: 0.82 (bajo) | 0.87 (normal) | 0.92 (alto) | 0.97 (extremo)</span>
+                    <code>Rango Total = max(High, Open) − min(Low, Close_anterior)</code>
+                    <code>TPs = Extremo ± (Rango_Total_D-1 × 50% / 75% / 90%)</code>
+                    <span class="note">El GAP es parte del rango del día. El rango total del día anterior determina los niveles de hoy.</span>
                 </div>
             </div>
 
-            <!-- Results Section -->
+            <!-- RESULTS SECTION -->
             <div class="card results-section" id="resultsSection">
                 <div class="card-header">
                     <h2 class="card-title">
                         <span class="card-title-icon">🎯</span>
                         Niveles Operativos
                     </h2>
+                    <button class="btn-secondary btn" onclick="resetForm()">Reset</button>
                 </div>
 
-                <div id="directionBadge" class="direction-badge long">
-                    <span>▲</span> LONG
-                </div>
+                <div id="directionBadge" class="direction-badge long">▲ LONG</div>
 
                 <div class="meta-info">
-                    <div id="vixTag" class="meta-tag vix-normal">
-                        <span class="dot"></span>
-                        <span>Factor 0.87</span>
-                    </div>
-                    <div id="gapTag" class="meta-tag">
-                        <span>Gap: --</span>
-                    </div>
-                    <div id="rangeTag" class="meta-tag">
-                        <span>Rango: --</span>
-                    </div>
+                    <div id="gapTag" class="meta-tag"><span>Gap: --</span></div>
+                    <div id="rangeTag" class="meta-tag"><span>Rango Total: --</span></div>
+                    <div id="wrTag" class="meta-tag wr-tag"><span>WR esperado: --</span></div>
                 </div>
 
                 <div class="levels-grid">
                     <div class="level-card entry">
-                        <button class="copy-btn" onclick="copyLevel(event, 'entryLevel')">Copy</button>
-                        <div class="level-label">Entry (18%)</div>
+                        <button class="copy-btn" onclick="copyLevel(event,'entryLevel')">Copy</button>
+                        <div class="level-label" id="entryLabel">Entry (6.5 pts)</div>
                         <div class="level-value" id="entryLevel">--</div>
                         <div class="level-desc">Confirmar reversión</div>
                     </div>
                     <div class="level-card sl">
-                        <button class="copy-btn" onclick="copyLevel(event, 'slLevel')">Copy</button>
-                        <div class="level-label">Stop Loss (12%)</div>
+                        <button class="copy-btn" onclick="copyLevel(event,'slLevel')">Copy</button>
+                        <div class="level-label" id="slLabel">Stop Loss (3.5 pts)</div>
                         <div class="level-value" id="slLevel">--</div>
                         <div class="level-desc" id="slPoints">-- pts riesgo</div>
                     </div>
                     <div class="level-card tp1">
-                        <button class="copy-btn" onclick="copyLevel(event, 'tp1Level')">Copy</button>
-                        <div class="level-label">TP1 (50%) - Cerrar 50%</div>
+                        <button class="copy-btn" onclick="copyLevel(event,'tp1Level')">Copy</button>
+                        <div class="level-label">TP1 (50% rango) — Cerrar 50%</div>
                         <div class="level-value" id="tp1Level">--</div>
                         <div class="level-desc">Mover SL a BE</div>
                     </div>
                     <div class="level-card tp2">
-                        <button class="copy-btn" onclick="copyLevel(event, 'tp2Level')">Copy</button>
-                        <div class="level-label">TP2 (75%) - Cerrar 30%</div>
+                        <button class="copy-btn" onclick="copyLevel(event,'tp2Level')">Copy</button>
+                        <div class="level-label">TP2 (75% rango) — Cerrar 30%</div>
                         <div class="level-value" id="tp2Level">--</div>
                         <div class="level-desc">Trailing stop</div>
                     </div>
                     <div class="level-card tp3">
-                        <button class="copy-btn" onclick="copyLevel(event, 'tp3Level')">Copy</button>
-                        <div class="level-label">TP3 (90%) - Cerrar 20%</div>
+                        <button class="copy-btn" onclick="copyLevel(event,'tp3Level')">Copy</button>
+                        <div class="level-label">TP3 (90% rango) — Cerrar 20%</div>
                         <div class="level-value" id="tp3Level">--</div>
                         <div class="level-desc">Target final</div>
                     </div>
                     <div class="level-card range">
-                        <div class="level-label">Rango Esperado</div>
-                        <div class="level-value" id="expectedRange">--</div>
-                        <div class="level-desc" id="rangeAccuracy">Reversión med: 91%</div>
+                        <div class="level-label">Rango Total D-1</div>
+                        <div class="level-value" id="rangeTotalDisplay">--</div>
+                        <div class="level-desc" id="rangeBreakdown">H: -- | L: --</div>
                     </div>
                 </div>
 
+                <!-- NIVELES DE RANGO (metodología libreta) -->
+                <div class="range-levels-section">
+                    <div class="range-levels-title">
+                        <span>Niveles de Rango (Fracciones D-1)</span>
+                        <span style="color:var(--text-muted);font-size:0.62rem;font-weight:400">R×0.182 / R×0.364 / R×0.734</span>
+                    </div>
+                    <div id="rangeLevelsGrid"></div>
+                </div>
+
+                <!-- FILTROS -->
                 <div class="filters-section">
                     <div class="filters-title">Verificación de Filtros</div>
                     <div class="filter-item">
-                        <span class="filter-name">Gap mínimo ≥ 0.15%</span>
+                        <span class="filter-name">Gap mínimo ≥ 0.10%</span>
                         <span class="filter-status" id="filterGap">--</span>
                     </div>
                     <div class="filter-item">
-                        <span class="filter-name">Rango anterior ≥ 25 pts</span>
+                        <span class="filter-name">Rango Total D-1 ≥ 15 pts</span>
                         <span class="filter-status" id="filterRange">--</span>
                     </div>
                     <div class="filter-item">
-                        <span class="filter-name">Tipo de Gap (DOWN preferido)</span>
+                        <span class="filter-name">Tipo de Gap</span>
                         <span class="filter-status" id="filterGapType">--</span>
                     </div>
                     <div class="filter-item">
@@ -914,16 +859,17 @@
 
                 <div id="filterAlert"></div>
 
+                <!-- SUMMARY -->
                 <div class="summary-card">
                     <div class="summary-title">Resumen de Operación</div>
                     <div class="summary-grid">
                         <div>
                             <div class="summary-item-value profit" id="potentialProfit">--</div>
-                            <div class="summary-item-label">Profit Potencial</div>
+                            <div class="summary-item-label">Profit (TP2)</div>
                         </div>
                         <div>
                             <div class="summary-item-value risk" id="riskAmount">--</div>
-                            <div class="summary-item-label">Riesgo Máximo</div>
+                            <div class="summary-item-label">Riesgo Máx</div>
                         </div>
                         <div>
                             <div class="summary-item-value" id="rrRatio">--</div>
@@ -934,7 +880,7 @@
             </div>
         </div>
 
-        <!-- Checklist Section -->
+        <!-- CHECKLIST -->
         <div class="card checklist-card">
             <div class="card-header">
                 <h2 class="card-title">
@@ -943,11 +889,9 @@
                 </h2>
                 <span class="checklist-counter" id="checklistCounter">0/4</span>
             </div>
-            
-            <p style="color: var(--text-muted); font-size: 0.75rem; margin-bottom: 1rem;">
-                Confirmar mínimo 3 de 4 criterios antes de ejecutar entrada:
+            <p style="color:var(--text-muted);font-size:0.72rem;margin-bottom:1rem;">
+                Confirmar mínimo 3 de 4 criterios antes de ejecutar:
             </p>
-            
             <div class="checklist-grid">
                 <div class="checklist-item" onclick="toggleCheck(this)">
                     <input type="checkbox" id="check1">
@@ -966,230 +910,430 @@
                     <label for="check4">Delta divergente / absorción institucional visible</label>
                 </div>
             </div>
-
             <div class="timeline-section">
                 <div class="timeline-title">Timeline de Ejecución (ET)</div>
-                <div class="timeline-step">
-                    <span class="step-time">Noche ant.</span>
-                    <span class="step-content">Registrar H/L/C del día</span>
+                <div class="timeline-step"><span class="step-time">Noche ant.</span><span class="step-content">Registrar H/L/C/O del día. Calcular Rango Total (con gap).</span></div>
+                <div class="timeline-step"><span class="step-time">09:30 ET</span><span class="step-content">Calcular Gap. Proyectar niveles de rango del día anterior.</span></div>
+                <div class="timeline-step"><span class="step-time">10:00-10:30</span><span class="step-content">Identificar Extremo Real. Validar Checklist (3/4 mín).</span></div>
+                <div class="timeline-step"><span class="step-time">10:30+</span><span class="step-content">Ejecutar entrada si filtros OK. Entry = Extremo ± 6.5 pts.</span></div>
+                <div class="timeline-step"><span class="step-time">14:00 ET</span><span class="step-content">Time-based exit si no alcanzó TP1.</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB: BACKTEST REAL -->
+    <div id="tab-backtest" class="tab-content">
+        <div class="backtest-header">
+            <div class="bt-stat">
+                <div class="bt-stat-value blue">1,545</div>
+                <div class="bt-stat-label">Total Trades</div>
+                <div class="bt-stat-sub">2016 — 2026</div>
+            </div>
+            <div class="bt-stat">
+                <div class="bt-stat-value yellow">36.1%</div>
+                <div class="bt-stat-label">Win Rate</div>
+                <div class="bt-stat-sub">LONG: 42.1% | SHORT: 31.7%</div>
+            </div>
+            <div class="bt-stat">
+                <div class="bt-stat-value green">1.11</div>
+                <div class="bt-stat-label">Profit Factor</div>
+                <div class="bt-stat-sub">Avg Win: 19.75 pts</div>
+            </div>
+            <div class="bt-stat">
+                <div class="bt-stat-value green">$56,145</div>
+                <div class="bt-stat-label">P&L Total (1 contrato)</div>
+                <div class="bt-stat-sub">ES $50/pt</div>
+            </div>
+        </div>
+
+        <div class="disclaimer">
+            ⚠ Supuesto del backtest: Extremo Real = High/Low de la primera hora RTH (9:30-10:30 ET). Entry = Extremo ± 6.5 pts. SL = Extremo ± 3.5 pts. TPs al 50%/75% del Rango Total D-1. Gap mínimo 0.10%. Rango mínimo 15 pts. Datos: ES 1H + 15M, 2016-2026. Los resultados pasados no garantizan resultados futuros.
+        </div>
+
+        <div class="three-col" style="margin-top:1.5rem;">
+            <!-- Resultados por año -->
+            <div class="card" style="grid-column: span 2;">
+                <div class="card-header">
+                    <h2 class="card-title"><span class="card-title-icon">📅</span>Resultados por Año</h2>
                 </div>
-                <div class="timeline-step">
-                    <span class="step-time">09:30</span>
-                    <span class="step-content">Calcular Gap y Rango Esperado</span>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Año</th>
+                                <th>Trades</th>
+                                <th>Wins</th>
+                                <th>Win Rate</th>
+                                <th>P&L ($)</th>
+                                <th>Barra</th>
+                            </tr>
+                        </thead>
+                        <tbody id="yearlyTable"></tbody>
+                    </table>
                 </div>
-                <div class="timeline-step">
-                    <span class="step-time">10:00-11:00</span>
-                    <span class="step-content">Identificar Extremo Real + Validar Checklist (3/4 mín)</span>
+            </div>
+
+            <!-- Win Rate por gap size -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title"><span class="card-title-icon">📐</span>WR por Tamaño de Gap</h2>
                 </div>
-                <div class="timeline-step">
-                    <span class="step-time">11:00+</span>
-                    <span class="step-content">Ejecutar entrada si todos los filtros OK</span>
-                </div>
-                <div class="timeline-step">
-                    <span class="step-time">14:00</span>
-                    <span class="step-content">Time-based exit si no alcanzó TP1</span>
+                <div class="bar-chart" id="gapBarChart"></div>
+
+                <div style="margin-top:1.5rem;">
+                    <div class="card-header" style="margin-bottom:0.75rem;padding-bottom:0.75rem;">
+                        <h2 class="card-title"><span class="card-title-icon">📏</span>WR por Rango Previo</h2>
+                    </div>
+                    <div class="bar-chart" id="rangeBarChart"></div>
                 </div>
             </div>
         </div>
 
-        <footer>
-            <p>Método 2 Gap Reversal Calculator <span class="version-tag">v2.0</span></p>
-            <p style="margin-top: 0.5rem;">
-                Backtested Oct-Dic 2025 | 23 trades | 87% Win Rate
+        <!-- Frecuencia de niveles de rango -->
+        <div class="card" style="margin-top:1.5rem;">
+            <div class="card-header">
+                <h2 class="card-title"><span class="card-title-icon">🎯</span>Frecuencia de Toque de Niveles de Rango (10 años)</h2>
+            </div>
+            <p style="color:var(--text-muted);font-size:0.72rem;margin-bottom:1rem;">
+                ¿Con qué frecuencia el precio del día siguiente toca cada nivel del rango del día anterior? (tolerancia ±0.5 pts)
             </p>
-        </footer>
+            <div class="bar-chart" id="levelHitsChart"></div>
+        </div>
     </div>
 
-    <script src="calculator.js"></script>
-    <script>
-        function calculateLevels() {
-            const prevHigh = parseFloat(document.getElementById('prevHigh').value);
-            const prevLow = parseFloat(document.getElementById('prevLow').value);
-            const prevClose = parseFloat(document.getElementById('prevClose').value);
-            const todayOpen = parseFloat(document.getElementById('todayOpen').value);
-            const extremeReal = parseFloat(document.getElementById('extremeReal').value);
-            const vixLevel = document.getElementById('vixLevel').value;
-            const instrumentKey = document.getElementById('instrument').value;
-            const entryModeKey = document.getElementById('entryMode').value;
+    <!-- TAB: METODOLOGÍA -->
+    <div id="tab-methodology" class="tab-content">
+        <div class="main-grid">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title"><span class="card-title-icon">📋</span>Reglas del Sistema</h2>
+                </div>
+                <div style="font-size:0.78rem;color:var(--text-secondary);line-height:1.7;">
+                    <p style="margin-bottom:1rem;color:var(--text-primary);font-weight:600;">REGLA FUNDAMENTAL: El GAP es parte del Rango del Día</p>
+                    
+                    <div class="formula-box" style="margin-bottom:1rem;">
+                        <code>Rango Total = max(High_RTH, Open_RTH) − min(Low_RTH, Close_D-2)</code>
+                        <code>Niveles D+1 = Fracciones del Rango Total de hoy</code>
+                        <span class="note">El gap de apertura se incluye en el rango. Ese rango total pasa al cálculo del día siguiente.</span>
+                    </div>
 
-            if (isNaN(prevHigh) || isNaN(prevLow) || isNaN(prevClose) || isNaN(todayOpen)) {
-                alert('Complete los campos requeridos: High, Low, Close anterior y Open de hoy');
-                return;
-            }
+                    <p style="font-weight:600;color:var(--text-primary);margin-bottom:0.5rem;">Fracciones de Rango (de la libreta):</p>
+                    <table style="width:100%;margin-bottom:1rem;">
+                        <thead><tr><th>Fracción</th><th>Valor exacto</th><th>Ejemplo (R=143)</th><th>Uso</th></tr></thead>
+                        <tbody>
+                            <tr><td class="td-blue">R × 0.182</td><td>26/143</td><td>26 pts</td><td>Nivel 1 (más cercano)</td></tr>
+                            <tr><td class="td-blue">R × 0.364</td><td>52/143</td><td>52 pts</td><td>Nivel 2 (intermedio)</td></tr>
+                            <tr><td class="td-blue">R × 0.734</td><td>105/143</td><td>105 pts</td><td>Nivel 3 (≈ 3/4 rango)</td></tr>
+                            <tr><td class="td-yellow">Midpoint</td><td>(H+L)/2</td><td>6839.5</td><td>Punto medio del rango</td></tr>
+                        </tbody>
+                    </table>
 
-            const instrument = instruments[instrumentKey];
-            const entryMode = entryModes[entryModeKey];
-            const prevRange = prevHigh - prevLow;
-            const gap = todayOpen - prevClose;
-            const gapPercent = (gap / prevClose) * 100;
-            const isGapUp = gap > 0;
-            const factor = vixFactors[vixLevel];
-            const expectedRange = (prevRange * factor) + Math.abs(gap);
-            const direction = isGapUp ? 'SHORT' : 'LONG';
+                    <p style="font-weight:600;color:var(--text-primary);margin-bottom:0.5rem;">Condiciones de entrada:</p>
+                    <ol style="padding-left:1.2rem;margin-bottom:1rem;">
+                        <li>Gap ≥ 0.10% entre Close D-1 y Open de hoy</li>
+                        <li>Rango Total D-1 ≥ 15 puntos</li>
+                        <li>Identificar Extremo Real (High/Low primera hora RTH)</li>
+                        <li>Confirmar 3/4 criterios del checklist</li>
+                        <li>Entry = Extremo ± 6.5 pts (dirección opuesta al gap)</li>
+                    </ol>
 
-            // Auto-suggest entry mode based on gap type
-            if (isGapUp && entryModeKey === 'aggressive') {
-                document.getElementById('entryMode').value = 'standard';
-            } else if (!isGapUp && entryModeKey === 'conservative') {
-                document.getElementById('entryMode').value = 'aggressive';
-            }
+                    <p style="font-weight:600;color:var(--text-primary);margin-bottom:0.5rem;">Gestión de la operación:</p>
+                    <table style="width:100%;">
+                        <thead><tr><th>Nivel</th><th>Acción</th><th>% posición</th></tr></thead>
+                        <tbody>
+                            <tr><td class="td-green">TP1 (50% rango)</td><td>Cerrar parcial + mover SL a BE</td><td>50%</td></tr>
+                            <tr><td class="td-green">TP2 (75% rango)</td><td>Cerrar parcial + trailing stop</td><td>30%</td></tr>
+                            <tr><td class="td-green">TP3 (90% rango)</td><td>Cerrar resto</td><td>20%</td></tr>
+                            <tr><td class="td-red">SL (3.5 pts)</td><td>Salida completa</td><td>100%</td></tr>
+                            <tr><td class="td-yellow">14:00 ET</td><td>Time-based exit si no llegó a TP1</td><td>100%</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
-            // Estimate extreme if not provided
-            let baseExtreme = extremeReal;
-            if (isNaN(extremeReal)) {
-                const gapMove = expectedRange * params.gapMoveEstimate;
-                baseExtreme = isGapUp ? todayOpen + gapMove : todayOpen - gapMove;
-            }
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title"><span class="card-title-icon">⚠</span>Interpretación del Backtest</h2>
+                </div>
+                <div style="font-size:0.78rem;color:var(--text-secondary);line-height:1.7;">
+                    <p style="color:var(--text-primary);font-weight:600;margin-bottom:0.75rem;">Hechos (datos reales del backtest):</p>
+                    <ul style="padding-left:1.2rem;margin-bottom:1rem;">
+                        <li>1,545 trades activados en 10 años (2016-2026)</li>
+                        <li>Win Rate real: 36.1% (no el 87% hardcodeado anterior)</li>
+                        <li>Profit Factor: 1.11 (levemente positivo)</li>
+                        <li>LONG (gap DOWN) tiene mejor WR: 42.1% vs SHORT 31.7%</li>
+                        <li>Gaps pequeños (0.1-0.2%) tienen mejor WR: 38.7%</li>
+                        <li>Rangos previos chicos (&lt;25 pts) tienen mejor WR: 50.1%</li>
+                    </ul>
 
-            // Calculate levels - fixed point distance from extreme
-            const entryPts = entryMode.entry;
-            const slPts = entryMode.sl;
+                    <p style="color:var(--text-primary);font-weight:600;margin-bottom:0.75rem;">Supuestos del backtest:</p>
+                    <ul style="padding-left:1.2rem;margin-bottom:1rem;">
+                        <li>Extremo Real = H/L de la primera hora RTH (9:30-10:30 ET)</li>
+                        <li>Sin filtro de VIX (no disponible en los datos)</li>
+                        <li>Sin filtro de día de la semana</li>
+                        <li>Sin filtro de eventos macro (FOMC, CPI, etc.)</li>
+                        <li>Entry siempre al mismo precio (sin slippage)</li>
+                    </ul>
 
-            let entry, tp1, tp2, tp3, sl;
+                    <p style="color:var(--text-primary);font-weight:600;margin-bottom:0.75rem;">Oportunidades de mejora:</p>
+                    <ul style="padding-left:1.2rem;">
+                        <li>Agregar filtro de VIX (WR mejora en volatilidad específica)</li>
+                        <li>Filtrar por día de la semana (Lunes/Viernes tienen peor WR históricamente)</li>
+                        <li>Filtrar por eventos macro (no operar días de FOMC/CPI)</li>
+                        <li>Usar el extremo real confirmado (no estimado) → mejora significativa esperada</li>
+                        <li>Ajustar TPs a los niveles de rango de la libreta (26/52/105 pts) en lugar de % fijo</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
 
-            if (direction === 'SHORT') {
-                entry = baseExtreme - entryPts;
-                sl = baseExtreme + slPts;
-                tp1 = baseExtreme - (expectedRange * params.tp1Pct);
-                tp2 = baseExtreme - (expectedRange * params.tp2Pct);
-                tp3 = baseExtreme - (expectedRange * params.tp3Pct);
-            } else {
-                entry = baseExtreme + entryPts;
-                sl = baseExtreme - slPts;
-                tp1 = baseExtreme + (expectedRange * params.tp1Pct);
-                tp2 = baseExtreme + (expectedRange * params.tp2Pct);
-                tp3 = baseExtreme + (expectedRange * params.tp3Pct);
-            }
+    <footer>
+        <p>Método 2 Gap Reversal Calculator <span class="version-tag">v3.0</span></p>
+        <p style="margin-top:0.4rem;">Backtest: ES 1H + 15M | 2016–2026 | 1,545 trades | WR real: 36.1%</p>
+    </footer>
 
-            const riskPoints = Math.abs(entry - sl);
-            const rewardPoints = Math.abs(tp2 - entry);
-            const rrRatio = rewardPoints / riskPoints;
-            const riskDollars = riskPoints * instrument.multiplier;
-            const rewardDollars = rewardPoints * instrument.multiplier;
+</div>
 
-            // Update UI
-            document.getElementById('resultsSection').classList.add('visible');
+<script src="calculator.js"></script>
+<script>
+// ============================================================
+// UI LOGIC
+// ============================================================
 
-            // Update entry label dynamically
-            document.querySelector('.level-card.entry .level-label').textContent = `Entry (${entryMode.label})`;
-            document.querySelector('.level-card.sl .level-label').textContent = `Stop Loss (${slPts} pts)`;
+function showTab(tabName) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + tabName).classList.add('active');
+    event.target.classList.add('active');
 
-            // Direction badge
-            const badge = document.getElementById('directionBadge');
-            badge.className = `direction-badge ${direction.toLowerCase()}`;
-            badge.innerHTML = direction === 'LONG' 
-                ? '<span>▲</span> LONG' 
-                : '<span>▼</span> SHORT';
+    if (tabName === 'backtest') renderBacktestTab();
+}
 
-            // Meta tags
-            const vixClasses = { 'low': 'vix-low', 'normal': 'vix-normal', 'high': 'vix-high', 'extreme': 'vix-extreme' };
-            document.getElementById('vixTag').className = `meta-tag ${vixClasses[vixLevel]}`;
-            document.getElementById('vixTag').innerHTML = `<span class="dot"></span><span>Factor ${factor}</span>`;
-            document.getElementById('gapTag').innerHTML = `<span>Gap: ${gap >= 0 ? '+' : ''}${gap.toFixed(2)} (${gapPercent.toFixed(2)}%)</span>`;
-            document.getElementById('rangeTag').innerHTML = `<span>Rango: ${expectedRange.toFixed(1)} pts</span>`;
+function calculateLevels() {
+    const prevHigh     = parseFloat(document.getElementById('prevHigh').value);
+    const prevLow      = parseFloat(document.getElementById('prevLow').value);
+    const prevClose    = parseFloat(document.getElementById('prevClose').value);
+    const prevOpen     = parseFloat(document.getElementById('prevOpen').value);
+    const prevPrevClose= parseFloat(document.getElementById('prevPrevClose').value);
+    const todayOpen    = parseFloat(document.getElementById('todayOpen').value);
+    const extremeReal  = parseFloat(document.getElementById('extremeReal').value);
+    const instrumentKey= document.getElementById('instrument').value;
+    const entryModeKey = document.getElementById('entryMode').value;
 
-            // Levels
-            document.getElementById('entryLevel').textContent = entry.toFixed(2);
-            document.getElementById('tp1Level').textContent = tp1.toFixed(2);
-            document.getElementById('tp2Level').textContent = tp2.toFixed(2);
-            document.getElementById('tp3Level').textContent = tp3.toFixed(2);
-            document.getElementById('slLevel').textContent = sl.toFixed(2);
-            document.getElementById('slPoints').textContent = `${riskPoints.toFixed(1)} pts ($${riskDollars.toFixed(0)})`;
-            document.getElementById('expectedRange').textContent = `${expectedRange.toFixed(1)} pts`;
+    if (isNaN(prevHigh) || isNaN(prevLow) || isNaN(prevClose) || isNaN(todayOpen)) {
+        alert('Completar: High D-1, Low D-1, Close D-1 y Open Hoy (mínimo requerido)');
+        return;
+    }
 
-            // Summary
-            document.getElementById('potentialProfit').textContent = `$${rewardDollars.toFixed(0)}`;
-            document.getElementById('riskAmount').textContent = `$${riskDollars.toFixed(0)}`;
-            document.getElementById('rrRatio').textContent = `1:${rrRatio.toFixed(2)}`;
+    const result = computeLevels({
+        prevHigh, prevLow, prevClose, prevOpen, prevPrevClose,
+        todayOpen, extremeReal, entryModeKey, instrumentKey
+    });
 
-            // Filters (STRICTER)
-            const gapFilter = Math.abs(gapPercent) >= params.minGapPct;
-            const rangeFilter = prevRange >= params.minPrevRange;
-            const gapTypeFilter = !isGapUp; // Gap DOWN preferred (100% fill rate vs 64.7%)
-            const extremeFilter = !isNaN(extremeReal);
+    if (!result) {
+        alert('Error en el cálculo. Verificar los datos ingresados.');
+        return;
+    }
 
-            updateFilter('filterGap', gapFilter, `${Math.abs(gapPercent).toFixed(2)}%`);
-            updateFilter('filterRange', rangeFilter, `${prevRange.toFixed(0)} pts`);
-            updateFilter('filterGapType', gapTypeFilter, isGapUp ? 'UP (64% fill)' : 'DOWN (100% fill)', gapTypeFilter ? 'pass' : 'warn');
-            updateFilter('filterExtreme', extremeFilter, extremeFilter ? '✓ Definido' : 'Pendiente', extremeFilter ? 'pass' : 'warn');
+    // Show results
+    document.getElementById('resultsSection').classList.add('visible');
 
-            // Alert
-            const alertDiv = document.getElementById('filterAlert');
-            const criticalPass = gapFilter && rangeFilter;
-            
-            if (!criticalPass) {
-                alertDiv.innerHTML = `
-                    <div class="alert alert-danger">
-                        <span>⛔</span>
-                        <div><strong>Filtros críticos no cumplidos.</strong> Este día no cumple criterios mínimos. NO OPERAR.</div>
-                    </div>`;
-            } else if (isGapUp) {
-                alertDiv.innerHTML = `
-                    <div class="alert alert-warning">
-                        <span>⚠️</span>
-                        <div><strong>Gap UP detectado.</strong> Fill rate histórico: 64.7%. Considerar reducir tamaño de posición o skip.</div>
-                    </div>`;
-            } else if (!extremeFilter) {
-                alertDiv.innerHTML = `
-                    <div class="alert alert-warning">
-                        <span>⏳</span>
-                        <div><strong>Esperando Extremo Real.</strong> Monitorear 10:00-11:00 ET. Completar checklist antes de entrar.</div>
-                    </div>`;
-            } else {
-                alertDiv.innerHTML = `
-                    <div class="alert alert-success">
-                        <span>✅</span>
-                        <div><strong>Setup válido.</strong> Gap DOWN + filtros OK. Verificar checklist 3/4 antes de ejecutar.</div>
-                    </div>`;
-            }
-        }
+    // Direction badge
+    const badge = document.getElementById('directionBadge');
+    badge.className = `direction-badge ${result.direction.toLowerCase()}`;
+    badge.innerHTML = result.direction === 'LONG' ? '▲ LONG' : '▼ SHORT';
 
-        function updateFilter(elementId, passed, value, forceClass = null) {
-            const el = document.getElementById(elementId);
-            const statusClass = forceClass || (passed ? 'pass' : 'fail');
-            el.className = `filter-status ${statusClass}`;
-            const icon = statusClass === 'pass' ? '✓' : (statusClass === 'warn' ? '⚠' : '✗');
-            el.innerHTML = `${icon} ${value}`;
-        }
+    // Meta tags
+    const gapSign = result.gap >= 0 ? '+' : '';
+    document.getElementById('gapTag').innerHTML = `<span>Gap: ${gapSign}${result.gap.toFixed(2)} (${gapSign}${result.gapPct.toFixed(2)}%)</span>`;
+    document.getElementById('rangeTag').innerHTML = `<span>Rango Total D-1: ${result.prevRangeTotal.toFixed(1)} pts</span>`;
+    document.getElementById('wrTag').innerHTML = `<span>WR esperado: ~${result.expectedWR.toFixed(1)}%</span>`;
 
-        function copyLevel(event, elementId) {
-            const value = document.getElementById(elementId).textContent;
-            navigator.clipboard.writeText(value).then(() => {
-                const btn = event.target;
-                btn.textContent = '✓';
-                setTimeout(() => btn.textContent = 'Copy', 800);
-            }).catch((err) => {
-                console.error('Failed to copy to clipboard:', err);
-                const btn = event.target;
-                btn.textContent = '✗';
-                setTimeout(() => btn.textContent = 'Copy', 800);
-            });
-        }
+    // Entry/SL labels
+    document.getElementById('entryLabel').textContent = `Entry (${result.entryPts} pts del extremo)`;
+    document.getElementById('slLabel').textContent = `Stop Loss (${result.slPts} pts del extremo)`;
 
-        function toggleCheck(item) {
-            const checkbox = item.querySelector('input[type="checkbox"]');
-            checkbox.checked = !checkbox.checked;
-            item.classList.toggle('checked', checkbox.checked);
-            updateChecklistCounter();
-        }
+    // Levels
+    document.getElementById('entryLevel').textContent = result.entry.toFixed(2);
+    document.getElementById('slLevel').textContent    = result.sl.toFixed(2);
+    document.getElementById('tp1Level').textContent   = result.tp1.toFixed(2);
+    document.getElementById('tp2Level').textContent   = result.tp2.toFixed(2);
+    document.getElementById('tp3Level').textContent   = result.tp3.toFixed(2);
+    document.getElementById('slPoints').textContent   = `${result.riskPoints.toFixed(1)} pts ($${result.riskDollars.toFixed(0)})`;
 
-        function updateChecklistCounter() {
-            const checks = document.querySelectorAll('.checklist-item input[type="checkbox"]:checked').length;
-            const counter = document.getElementById('checklistCounter');
-            counter.textContent = `${checks}/4`;
-            counter.classList.toggle('ready', checks >= 3);
-        }
+    // Range display
+    document.getElementById('rangeTotalDisplay').textContent = `${result.prevRangeTotal.toFixed(1)} pts`;
+    document.getElementById('rangeBreakdown').textContent = `H: ${result.prevTrueHigh.toFixed(2)} | L: ${result.prevTrueLow.toFixed(2)}`;
 
-        // Event listeners
-        document.querySelectorAll('input[type="number"]').forEach(input => {
-            input.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') calculateLevels();
-            });
-        });
+    // Range levels grid
+    renderRangeLevels(result);
 
-        document.querySelectorAll('.checklist-item input[type="checkbox"]').forEach(cb => {
-            cb.addEventListener('change', updateChecklistCounter);
-        });
-    </script>
+    // Filters
+    updateFilter('filterGap',     result.filters.gapFilter,   `${result.gapPct.toFixed(2)}%`);
+    updateFilter('filterRange',   result.filters.rangeFilter, `${result.prevRangeTotal.toFixed(1)} pts`);
+    updateFilter('filterGapType', !result.isGapUp, result.isGapUp ? 'UP (WR 31.7%)' : 'DOWN (WR 42.1%)', result.isGapUp ? 'warn' : 'pass');
+    updateFilter('filterExtreme', result.hasExtremeReal, result.hasExtremeReal ? '✓ Definido' : 'Pendiente', result.hasExtremeReal ? 'pass' : 'warn');
+
+    // Alert
+    const alertDiv = document.getElementById('filterAlert');
+    if (!result.filters.criticalPass) {
+        alertDiv.innerHTML = `<div class="alert alert-danger"><span>⛔</span><div><strong>Filtros críticos no cumplidos.</strong> Gap o rango insuficiente. NO OPERAR.</div></div>`;
+    } else if (result.isGapUp) {
+        alertDiv.innerHTML = `<div class="alert alert-warning"><span>⚠️</span><div><strong>Gap UP (SHORT).</strong> WR histórico: 31.7%. Usar modo conservador (8 pts). Confirmar extremo real.</div></div>`;
+    } else if (!result.hasExtremeReal) {
+        alertDiv.innerHTML = `<div class="alert alert-warning"><span>⏳</span><div><strong>Esperando Extremo Real.</strong> Monitorear 10:00-10:30 ET. Completar checklist antes de entrar.</div></div>`;
+    } else {
+        alertDiv.innerHTML = `<div class="alert alert-success"><span>✅</span><div><strong>Setup válido.</strong> Gap DOWN + Extremo Real definido. WR esperado: ~${result.expectedWR.toFixed(1)}%. Verificar 3/4 checklist.</div></div>`;
+    }
+
+    // Summary
+    document.getElementById('potentialProfit').textContent = `$${result.rewardDollars.toFixed(0)}`;
+    document.getElementById('riskAmount').textContent      = `$${result.riskDollars.toFixed(0)}`;
+    document.getElementById('rrRatio').textContent         = `1:${result.rrRatio.toFixed(2)}`;
+}
+
+function renderRangeLevels(result) {
+    const rl = result.rangeLevels;
+    const R  = result.prevRangeTotal;
+    const { f1, f2, f3 } = RANGE_FRACTIONS;
+
+    const levels = [
+        { name: 'H ext (+R×0.182)', value: rl.H_ext,    pct: '+18.2%', note: 'Extensión alcista' },
+        { name: 'H (True High D-1)', value: rl.H,       pct: '100%',   note: 'Resistencia clave' },
+        { name: 'H − R×0.182 (26)', value: rl.H_f1,    pct: '81.8%',  note: `−${(R*f1).toFixed(1)} pts` },
+        { name: 'H − R×0.364 (52)', value: rl.H_f2,    pct: '63.6%',  note: `−${(R*f2).toFixed(1)} pts` },
+        { name: 'H − R×0.734 (105)',value: rl.H_f3,    pct: '26.6%',  note: `−${(R*f3).toFixed(1)} pts` },
+        { name: 'Midpoint',          value: rl.midpoint, pct: '50.0%',  note: 'Centro del rango' },
+        { name: 'L + R×0.734',       value: rl.L_f3,    pct: '73.4%',  note: `+${(R*f3).toFixed(1)} pts` },
+        { name: 'L + R×0.364',       value: rl.L_f2,    pct: '36.4%',  note: `+${(R*f2).toFixed(1)} pts` },
+        { name: 'L + R×0.182',       value: rl.L_f1,    pct: '18.2%',  note: `+${(R*f1).toFixed(1)} pts` },
+        { name: 'L (True Low D-1)',   value: rl.L,       pct: '0%',     note: 'Soporte clave' },
+        { name: 'L ext (−R×0.182)',   value: rl.L_ext,   pct: '−18.2%', note: 'Extensión bajista' },
+    ];
+
+    const todayOpen = parseFloat(document.getElementById('todayOpen').value);
+    const html = levels.map(l => {
+        const isNearOpen = !isNaN(todayOpen) && Math.abs(l.value - todayOpen) < 5;
+        return `<div class="range-level-row${isNearOpen ? ' current-zone' : ''}">
+            <span class="range-level-name">${l.name}</span>
+            <span class="range-level-value">${l.value.toFixed(2)}</span>
+            <span class="range-level-pct">${l.note}</span>
+        </div>`;
+    }).join('');
+
+    document.getElementById('rangeLevelsGrid').innerHTML = html;
+}
+
+function updateFilter(id, passed, value, forceClass = null) {
+    const el = document.getElementById(id);
+    const cls = forceClass || (passed ? 'pass' : 'fail');
+    el.className = `filter-status ${cls}`;
+    const icon = cls === 'pass' ? '✓' : (cls === 'warn' ? '⚠' : '✗');
+    el.innerHTML = `${icon} ${value}`;
+}
+
+function copyLevel(event, elementId) {
+    const value = document.getElementById(elementId).textContent;
+    navigator.clipboard.writeText(value).then(() => {
+        const btn = event.target;
+        btn.textContent = '✓';
+        setTimeout(() => btn.textContent = 'Copy', 800);
+    });
+}
+
+function resetForm() {
+    document.querySelectorAll('input[type="number"]').forEach(i => i.value = '');
+    document.getElementById('resultsSection').classList.remove('visible');
+    document.querySelectorAll('.checklist-item').forEach(i => {
+        i.classList.remove('checked');
+        i.querySelector('input[type="checkbox"]').checked = false;
+    });
+    updateChecklistCounter();
+}
+
+function toggleCheck(item) {
+    const cb = item.querySelector('input[type="checkbox"]');
+    cb.checked = !cb.checked;
+    item.classList.toggle('checked', cb.checked);
+    updateChecklistCounter();
+}
+
+function updateChecklistCounter() {
+    const n = document.querySelectorAll('.checklist-item input[type="checkbox"]:checked').length;
+    const counter = document.getElementById('checklistCounter');
+    counter.textContent = `${n}/4`;
+    counter.classList.toggle('ready', n >= 3);
+}
+
+// ============================================================
+// BACKTEST TAB RENDERING
+// ============================================================
+function renderBacktestTab() {
+    // Yearly table
+    const tbody = document.getElementById('yearlyTable');
+    if (tbody.innerHTML !== '') return; // already rendered
+
+    const maxPnl = Math.max(...BACKTEST_STATS.yearly.map(y => Math.abs(y.pnl)));
+
+    tbody.innerHTML = BACKTEST_STATS.yearly.map(y => {
+        const isPos = y.pnl >= 0;
+        const barW = Math.round(Math.abs(y.pnl) / maxPnl * 80);
+        const barColor = isPos ? '#22c55e' : '#ef4444';
+        return `<tr>
+            <td>${y.year}</td>
+            <td class="td-blue">${y.trades}</td>
+            <td class="td-green">${y.wins}</td>
+            <td class="${y.wr >= 40 ? 'td-green' : y.wr >= 30 ? 'td-yellow' : 'td-red'}">${y.wr}%</td>
+            <td class="${isPos ? 'td-green' : 'td-red'}">${isPos ? '+' : ''}$${y.pnl.toLocaleString()}</td>
+            <td><div style="width:${barW}px;height:8px;background:${barColor};border-radius:3px;"></div></td>
+        </tr>`;
+    }).join('');
+
+    // Gap bar chart
+    const gapChart = document.getElementById('gapBarChart');
+    gapChart.innerHTML = BACKTEST_STATS.gapAnalysis.map(g => `
+        <div class="bar-row">
+            <span class="bar-label">${g.bucket}</span>
+            <div class="bar-track">
+                <div class="bar-fill" style="width:${g.wr}%;background:${g.wr >= 40 ? '#22c55e' : g.wr >= 35 ? '#eab308' : '#ef4444'};"></div>
+            </div>
+            <span class="bar-pct">${g.wr}%</span>
+        </div>
+    `).join('');
+
+    // Range bar chart
+    const rangeChart = document.getElementById('rangeBarChart');
+    rangeChart.innerHTML = BACKTEST_STATS.rangeAnalysis.map(r => `
+        <div class="bar-row">
+            <span class="bar-label">${r.bucket}</span>
+            <div class="bar-track">
+                <div class="bar-fill" style="width:${r.wr}%;background:${r.wr >= 40 ? '#22c55e' : r.wr >= 30 ? '#eab308' : '#ef4444'};"></div>
+            </div>
+            <span class="bar-pct">${r.wr}%</span>
+        </div>
+    `).join('');
+
+    // Level hits chart
+    const levelChart = document.getElementById('levelHitsChart');
+    levelChart.innerHTML = BACKTEST_STATS.levelHits.map(l => `
+        <div class="bar-row">
+            <span class="bar-label" style="min-width:200px;">${l.level}</span>
+            <div class="bar-track">
+                <div class="bar-fill" style="width:${l.pct}%;background:${l.pct >= 50 ? '#22c55e' : l.pct >= 40 ? '#3b82f6' : '#71717a'};"></div>
+            </div>
+            <span class="bar-pct">${l.pct}%</span>
+        </div>
+    `).join('');
+}
+
+// Event listeners
+document.querySelectorAll('input[type="number"]').forEach(input => {
+    input.addEventListener('keypress', e => { if (e.key === 'Enter') calculateLevels(); });
+});
+document.querySelectorAll('.checklist-item input[type="checkbox"]').forEach(cb => {
+    cb.addEventListener('change', updateChecklistCounter);
+});
+</script>
 </body>
 </html>
