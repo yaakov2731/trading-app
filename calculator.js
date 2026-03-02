@@ -40,6 +40,7 @@ const params = {
 };
 
 // Estadísticas reales del backtest (10 años, 2016-2026)
+// FILTROS MEJORADOS - Análisis de 10 años, datos reales
 const BACKTEST_STATS = {
     totalTrades: 1545,
     winRate: 36.1,
@@ -51,6 +52,18 @@ const BACKTEST_STATS = {
     shortWR: 31.7,
     yearsBacktested: 10,
     dataSource: 'ES 1H + 15M, 2016-2026',
+    // FILTROS GANADORES (análisis de 10 años)
+    // Filtro A: LONG + Vol<80% + Rango<40 → WR=72.9%, PF=2.82, 85 trades
+    // Filtro B: LONG + Close D-1<35% + Rango<40 → WR=67.9%, PF=2.25, 78 trades
+    // Filtro C: LONG + Vol<100% + Rango<40 → WR=61.5%, PF=1.77, 187 trades (RECOMENDADO)
+    // Filtro D: LONG + Vol<100% + Rango<40 + Mar-Jue → WR=62.3%, PF=1.89, 114 trades
+    filterStats: [
+        { name: 'Sin filtros (baseline)',              trades: 1545, wr: 36.1, pf: 1.11, pnl_usd: 56145,  conditions: 'Todos los setups' },
+        { name: 'LONG + Vol<100% + Rango<40',          trades: 187,  wr: 61.5, pf: 1.77, pnl_usd: 27631,  conditions: 'Gap DOWN + ATR5<ATR20 + Rango<40' },
+        { name: 'LONG + Vol<80% + Rango<40',           trades: 85,   wr: 72.9, pf: 2.82, pnl_usd: 20969,  conditions: 'Gap DOWN + ATR5<80%ATR20 + Rango<40' },
+        { name: 'LONG + Close D-1<35% + Rango<40',     trades: 78,   wr: 67.9, pf: 2.25, pnl_usd: 15634,  conditions: 'Gap DOWN + Close D-1 bajo + Rango<40' },
+        { name: 'LONG + Vol<100% + Rango<40 + Mar-Jue', trades: 114, wr: 62.3, pf: 1.89, pnl_usd: 19084,  conditions: 'Gap DOWN + ATR5<ATR20 + Rango<40 + Mar-Jue' },
+    ],
     // Win rate por tamaño de gap
     gapAnalysis: [
         { bucket: '0.1-0.2%', wr: 38.7, trades: 302 },
@@ -163,7 +176,9 @@ function calcRangeLevels(prevTrueHigh, prevTrueLow, rangeTotal) {
  */
 function computeLevels({
     prevHigh, prevLow, prevClose, prevOpen, prevPrevClose,
-    todayOpen, extremeReal, entryModeKey, instrumentKey
+    todayOpen, extremeReal, entryModeKey, instrumentKey,
+    // Parámetros para filtros avanzados (opcionales)
+    atr5, atr20, dow
 }) {
     // Validaciones
     if (isNaN(prevHigh) || isNaN(prevLow) || isNaN(prevClose) || isNaN(todayOpen)) {
@@ -199,6 +214,13 @@ function computeLevels({
     const gapPct = prevClose !== 0 ? (Math.abs(gap) / prevClose) * 100 : 0;
     const isGapUp = gap > 0;
     const direction = isGapUp ? 'SHORT' : 'LONG';
+
+    // Régimen de volatilidad (ATR5 / ATR20)
+    const volRegime = (!isNaN(atr5) && !isNaN(atr20) && atr20 > 0) ? atr5 / atr20 : null;
+
+    // Posición del close D-1 en el rango (0=Low, 1=High)
+    const prevRangeForPos = prevHigh - prevLow;
+    const closePosD1 = prevRangeForPos > 0 ? (prevClose - prevLow) / prevRangeForPos : null;
 
     // --------------------------------------------------------
     // 3. NIVELES DE RANGO (del día anterior, para hoy)
@@ -270,6 +292,17 @@ function computeLevels({
     else if (prevRangeTotal < 100) expectedWR_range = 21.9;
     else expectedWR_range = 16.7;
 
+    // --------------------------------------------------------
+    // 7. FILTROS MEJORADOS (análisis 10 años)
+    // Calcula qué filtros aplican y el WR esperado con filtros
+    // --------------------------------------------------------
+    const filterAnalysis = computeAdvancedFilters({
+        isGapUp, prevRangeTotal, gapPct, volRegime, closePosD1, dow
+    });
+
+    // WR esperado con filtros activos
+    const filteredWR = filterAnalysis.bestFilterWR || expectedWR;
+
     return {
         // Rango
         prevRangeTotal,
@@ -293,12 +326,101 @@ function computeLevels({
         rangeLevels,
         // Filtros
         filters,
+        filterAnalysis,
         // Win rate esperado
         expectedWR,
         expectedWR_range,
+        filteredWR,
+        volRegime,
+        closePosD1,
         // Instrumento
         instrument,
         entryMode,
+    };
+}
+
+/**
+ * Calcula los filtros AVANZADOS del setup (basados en análisis de 10 años).
+ * Resultados reales del backtest 2016-2026:
+ * - Filtro A: LONG + Vol<80% + Rango<40 → WR=72.9%, PF=2.82 (85 trades)
+ * - Filtro B: LONG + Close D-1<35% + Rango<40 → WR=67.9%, PF=2.25 (78 trades)
+ * - Filtro C: LONG + Vol<100% + Rango<40 → WR=61.5%, PF=1.77 (187 trades) [RECOMENDADO]
+ * - Filtro D: LONG + Vol<100% + Rango<40 + Mar-Jue → WR=62.3%, PF=1.89 (114 trades)
+ */
+function computeAdvancedFilters({ isGapUp, prevRangeTotal, gapPct, volRegime, closePosD1, dow }) {
+    const isLong = !isGapUp;
+    const rangeOk = prevRangeTotal < 40;
+    const volLow80  = volRegime !== null && volRegime < 0.80;  // ATR5 < 80% ATR20
+    const volLow100 = volRegime !== null && volRegime < 1.00;  // ATR5 < 100% ATR20
+    const closeLow  = closePosD1 !== null && closePosD1 < 0.35; // Close D-1 en zona baja
+    const isMidWeek = dow !== null && [1, 2, 3].includes(dow); // Mar=1, Mie=2, Jue=3
+
+    // Evaluar cada filtro
+    const filterA = isLong && volLow80  && rangeOk;  // WR=72.9%
+    const filterB = isLong && closeLow  && rangeOk;  // WR=67.9%
+    const filterC = isLong && volLow100 && rangeOk;  // WR=61.5% (RECOMENDADO)
+    const filterD = isLong && volLow100 && rangeOk && isMidWeek; // WR=62.3%
+
+    // Determinar el mejor filtro activo
+    let activeFilters = [];
+    let bestFilterWR = null;
+    let bestFilterName = null;
+    let bestFilterPF = null;
+    let qualityScore = 0; // 0=no aplica, 1=baseline, 2=bueno, 3=muy bueno, 4=excelente
+
+    if (filterA) {
+        activeFilters.push({ name: 'Filtro A', wr: 72.9, pf: 2.82, trades: 85, label: 'Vol<80% + Rango<40' });
+        if (!bestFilterWR || 72.9 > bestFilterWR) { bestFilterWR = 72.9; bestFilterName = 'A'; bestFilterPF = 2.82; qualityScore = 4; }
+    }
+    if (filterB) {
+        activeFilters.push({ name: 'Filtro B', wr: 67.9, pf: 2.25, trades: 78, label: 'Close D-1<35% + Rango<40' });
+        if (!bestFilterWR || 67.9 > bestFilterWR) { bestFilterWR = 67.9; bestFilterName = 'B'; bestFilterPF = 2.25; qualityScore = Math.max(qualityScore, 4); }
+    }
+    if (filterD) {
+        activeFilters.push({ name: 'Filtro D', wr: 62.3, pf: 1.89, trades: 114, label: 'Vol<100% + Rango<40 + Mar-Jue' });
+        if (!bestFilterWR || 62.3 > bestFilterWR) { bestFilterWR = 62.3; bestFilterName = 'D'; bestFilterPF = 1.89; qualityScore = Math.max(qualityScore, 3); }
+    }
+    if (filterC) {
+        activeFilters.push({ name: 'Filtro C', wr: 61.5, pf: 1.77, trades: 187, label: 'Vol<100% + Rango<40' });
+        if (!bestFilterWR || 61.5 > bestFilterWR) { bestFilterWR = 61.5; bestFilterName = 'C'; bestFilterPF = 1.77; qualityScore = Math.max(qualityScore, 3); }
+    }
+
+    // Si es LONG sin filtros especiales
+    if (isLong && !filterC && !filterA && !filterB) {
+        bestFilterWR = 42.1; bestFilterName = 'LONG base'; bestFilterPF = 1.45; qualityScore = 2;
+    }
+
+    // Si es SHORT
+    if (!isLong) {
+        bestFilterWR = 31.7; bestFilterName = 'SHORT base'; bestFilterPF = 0.91; qualityScore = 1;
+    }
+
+    // Datos para mostrar en la UI
+    const hasHighQualitySetup = qualityScore >= 3;
+    const recommendation = qualityScore >= 4 ? 'SETUP PREMIUM ★★★' :
+                           qualityScore >= 3 ? 'SETUP BUENO ★★' :
+                           qualityScore >= 2 ? 'SETUP NORMAL ★' :
+                           'SETUP BAJO (SHORT)';
+
+    // Condiciones faltantes para llegar al filtro C (el más accesible)
+    const missingForC = [];
+    if (!isLong) missingForC.push('Necesita Gap DOWN (no UP)');
+    if (!rangeOk) missingForC.push(`Rango D-1 debe ser <40 pts (actual: ${prevRangeTotal.toFixed(1)})`);
+    if (!volLow100 && volRegime !== null) missingForC.push(`Vol régimen debe ser <1.0 (actual: ${volRegime.toFixed(2)})`);
+    if (volRegime === null) missingForC.push('Ingresar ATR5/ATR20 para activar filtro de volatilidad');
+
+    return {
+        filterA, filterB, filterC, filterD,
+        activeFilters,
+        bestFilterWR,
+        bestFilterName,
+        bestFilterPF,
+        qualityScore,
+        hasHighQualitySetup,
+        recommendation,
+        missingForC,
+        volRegime,
+        closePosD1,
     };
 }
 

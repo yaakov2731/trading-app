@@ -760,6 +760,44 @@
                     </div>
                 </div>
 
+                <div class="section-divider" style="color:var(--green)">Filtros Avanzados (opcional — mejoran WR hasta 72.9%)</div>
+                <div class="input-grid">
+                    <div class="input-group">
+                        <label for="atr5">
+                            ATR5 (5 sesiones)
+                            <span class="tooltip"><i class="info-icon">?</i>
+                                <span class="tooltip-text">Promedio del Rango Total de las últimas 5 sesiones. Filtro clave: ATR5 &lt; ATR20 indica mercado en compresión → WR mejora a 61-72%.</span>
+                            </span>
+                        </label>
+                        <input type="number" id="atr5" placeholder="Ej: 28.5" step="0.1">
+                    </div>
+                    <div class="input-group">
+                        <label for="atr20">
+                            ATR20 (20 sesiones)
+                            <span class="tooltip"><i class="info-icon">?</i>
+                                <span class="tooltip-text">Promedio del Rango Total de las últimas 20 sesiones. Si ATR5/ATR20 &lt; 1.0 → Filtro C activo (WR=61.5%). Si &lt; 0.8 → Filtro A (WR=72.9%).</span>
+                            </span>
+                        </label>
+                        <input type="number" id="atr20" placeholder="Ej: 35.0" step="0.1">
+                    </div>
+                    <div class="input-group">
+                        <label for="dowSelect">
+                            Día de la Semana
+                            <span class="tooltip"><i class="info-icon">?</i>
+                                <span class="tooltip-text">Mar-Jue tienen mejor WR histórico. Filtro D: LONG + Vol&lt;100% + Rango&lt;40 + Mar-Jue → WR=62.3%, PF=1.89.</span>
+                            </span>
+                        </label>
+                        <select id="dowSelect">
+                            <option value="">-- Seleccionar --</option>
+                            <option value="0">Lunes</option>
+                            <option value="1">Martes</option>
+                            <option value="2">Miércoles</option>
+                            <option value="3">Jueves</option>
+                            <option value="4">Viernes</option>
+                        </select>
+                    </div>
+                </div>
+
                 <button class="btn btn-primary" onclick="calculateLevels()">
                     Calcular Niveles →
                 </button>
@@ -836,7 +874,7 @@
                     <div id="rangeLevelsGrid"></div>
                 </div>
 
-                <!-- FILTROS -->
+                <!-- FILTROS BÁSICOS -->
                 <div class="filters-section">
                     <div class="filters-title">Verificación de Filtros</div>
                     <div class="filter-item">
@@ -855,6 +893,15 @@
                         <span class="filter-name">Extremo Real identificado</span>
                         <span class="filter-status" id="filterExtreme">--</span>
                     </div>
+                </div>
+
+                <!-- PANEL DE CALIDAD DEL SETUP -->
+                <div id="setupQualityPanel" style="display:none; margin-top:0.75rem; padding:0.875rem; background:var(--bg-secondary); border-radius:8px; border:1px solid var(--border-light);">
+                    <div style="font-size:0.65rem; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:0.6rem;">Filtros Avanzados (10 años de datos)</div>
+                    <div id="setupQualityBadge" style="font-size:1rem; font-weight:700; margin-bottom:0.5rem;">--</div>
+                    <div id="setupQualityWR" style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:0.5rem;">WR esperado: --</div>
+                    <div id="activeFiltersDisplay" style="font-size:0.72rem; color:var(--text-muted);"></div>
+                    <div id="missingFiltersDisplay" style="font-size:0.7rem; color:var(--yellow); margin-top:0.4rem;"></div>
                 </div>
 
                 <div id="filterAlert"></div>
@@ -999,6 +1046,41 @@
             </p>
             <div class="bar-chart" id="levelHitsChart"></div>
         </div>
+
+        <!-- FILTROS AVANZADOS - TABLA COMPARATIVA -->
+        <div class="card" style="margin-top:1.5rem; border-color: rgba(34,197,94,0.3);">
+            <div class="card-header">
+                <h2 class="card-title"><span class="card-title-icon">★</span>Filtros Avanzados — Comparativa de Win Rate</h2>
+                <span class="badge" style="background:rgba(34,197,94,0.15);color:var(--green);border:1px solid rgba(34,197,94,0.3);">10 años de datos reales</span>
+            </div>
+            <p style="color:var(--text-muted);font-size:0.72rem;margin-bottom:1rem;">
+                Aplicando filtros específicos al sistema base (36.1% WR), el Win Rate mejora significativamente. Solo aplican a setups LONG (Gap DOWN).
+            </p>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Filtro</th>
+                            <th>Condiciones</th>
+                            <th>Trades</th>
+                            <th>Win Rate</th>
+                            <th>Profit Factor</th>
+                            <th>P&amp;L Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="filterStatsTable"></tbody>
+                </table>
+            </div>
+            <div style="margin-top:1rem;padding:0.75rem;background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.2);border-radius:6px;">
+                <p style="font-size:0.72rem;color:var(--text-secondary);">
+                    <strong style="color:var(--green);">Cómo usar los filtros:</strong> En la pestaña Calculadora, completar los campos <em>ATR5</em>, <em>ATR20</em> y <em>Día de la Semana</em> para activar el análisis automático. 
+                    El sistema detectará qué filtros aplican y mostrará el WR esperado ajustado.
+                </p>
+                <p style="font-size:0.72rem;color:var(--text-muted);margin-top:0.4rem;">
+                    ATR5 y ATR20 = promedio del Rango Total (incluyendo gap) de las últimas 5 y 20 sesiones respectivamente.
+                </p>
+            </div>
+        </div>
     </div>
 
     <!-- TAB: METODOLOGÍA -->
@@ -1120,6 +1202,11 @@ function calculateLevels() {
     const extremeReal  = parseFloat(document.getElementById('extremeReal').value);
     const instrumentKey= document.getElementById('instrument').value;
     const entryModeKey = document.getElementById('entryMode').value;
+    // Filtros avanzados (opcionales)
+    const atr5Val      = parseFloat(document.getElementById('atr5').value);
+    const atr20Val     = parseFloat(document.getElementById('atr20').value);
+    const dowVal       = document.getElementById('dowSelect').value;
+    const dowInt       = dowVal !== '' ? parseInt(dowVal) : null;
 
     if (isNaN(prevHigh) || isNaN(prevLow) || isNaN(prevClose) || isNaN(todayOpen)) {
         alert('Completar: High D-1, Low D-1, Close D-1 y Open Hoy (mínimo requerido)');
@@ -1128,7 +1215,8 @@ function calculateLevels() {
 
     const result = computeLevels({
         prevHigh, prevLow, prevClose, prevOpen, prevPrevClose,
-        todayOpen, extremeReal, entryModeKey, instrumentKey
+        todayOpen, extremeReal, entryModeKey, instrumentKey,
+        atr5: atr5Val, atr20: atr20Val, dow: dowInt
     });
 
     if (!result) {
@@ -1175,6 +1263,52 @@ function calculateLevels() {
     updateFilter('filterGapType', !result.isGapUp, result.isGapUp ? 'UP (WR 31.7%)' : 'DOWN (WR 42.1%)', result.isGapUp ? 'warn' : 'pass');
     updateFilter('filterExtreme', result.hasExtremeReal, result.hasExtremeReal ? '✓ Definido' : 'Pendiente', result.hasExtremeReal ? 'pass' : 'warn');
 
+    // Panel de calidad del setup (filtros avanzados)
+    const fa = result.filterAnalysis;
+    const qualityPanel = document.getElementById('setupQualityPanel');
+    const hasAdvancedInputs = !isNaN(atr5Val) || !isNaN(atr20Val) || dowInt !== null;
+
+    if (hasAdvancedInputs && fa) {
+        qualityPanel.style.display = 'block';
+
+        // Badge de calidad
+        const badge = document.getElementById('setupQualityBadge');
+        const colors = { 4: 'var(--green)', 3: '#22c55e', 2: 'var(--yellow)', 1: 'var(--accent-light)', 0: 'var(--text-muted)' };
+        badge.style.color = colors[fa.qualityScore] || 'var(--text-muted)';
+        badge.textContent = fa.recommendation || '--';
+
+        // WR esperado con filtros
+        const wrEl = document.getElementById('setupQualityWR');
+        if (fa.bestFilterWR) {
+            wrEl.innerHTML = `WR esperado con filtros: <strong style="color:var(--green);font-size:1.1em">${fa.bestFilterWR.toFixed(1)}%</strong> | PF: <strong>${fa.bestFilterPF.toFixed(2)}</strong> (vs baseline 36.1%)`;
+        } else {
+            wrEl.textContent = 'WR esperado: ' + result.expectedWR.toFixed(1) + '%';
+        }
+
+        // Filtros activos
+        const activeEl = document.getElementById('activeFiltersDisplay');
+        if (fa.activeFilters && fa.activeFilters.length > 0) {
+            activeEl.innerHTML = 'Filtros activos: ' + fa.activeFilters.map(f =>
+                `<span style="background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.3);border-radius:4px;padding:1px 6px;margin:0 2px;">${f.name} (WR=${f.wr}%)</span>`
+            ).join('');
+        } else {
+            activeEl.textContent = 'Ningún filtro avanzado activo con los datos ingresados.';
+        }
+
+        // Filtros faltantes
+        const missingEl = document.getElementById('missingFiltersDisplay');
+        if (fa.missingForC && fa.missingForC.length > 0 && fa.qualityScore < 3) {
+            missingEl.innerHTML = 'Para activar Filtro C (WR=61.5%): ' + fa.missingForC.join(' | ');
+        } else {
+            missingEl.textContent = '';
+        }
+
+        // Actualizar el WR tag en el header de resultados
+        document.getElementById('wrTag').innerHTML = `<span>WR con filtros: ~${fa.bestFilterWR ? fa.bestFilterWR.toFixed(1) : result.expectedWR.toFixed(1)}%</span>`;
+    } else {
+        qualityPanel.style.display = 'none';
+    }
+
     // Alert
     const alertDiv = document.getElementById('filterAlert');
     if (!result.filters.criticalPass) {
@@ -1184,7 +1318,9 @@ function calculateLevels() {
     } else if (!result.hasExtremeReal) {
         alertDiv.innerHTML = `<div class="alert alert-warning"><span>⏳</span><div><strong>Esperando Extremo Real.</strong> Monitorear 10:00-10:30 ET. Completar checklist antes de entrar.</div></div>`;
     } else {
-        alertDiv.innerHTML = `<div class="alert alert-success"><span>✅</span><div><strong>Setup válido.</strong> Gap DOWN + Extremo Real definido. WR esperado: ~${result.expectedWR.toFixed(1)}%. Verificar 3/4 checklist.</div></div>`;
+        const wrDisplay = (fa && fa.bestFilterWR) ? fa.bestFilterWR.toFixed(1) : result.expectedWR.toFixed(1);
+        const qualLabel = (fa && fa.qualityScore >= 4) ? ' ★★★ SETUP PREMIUM' : (fa && fa.qualityScore >= 3) ? ' ★★ SETUP BUENO' : '';
+        alertDiv.innerHTML = `<div class="alert alert-success"><span>✅</span><div><strong>Setup válido${qualLabel}.</strong> Gap DOWN + Extremo Real definido. WR esperado: ~${wrDisplay}%. Verificar 3/4 checklist.</div></div>`;
     }
 
     // Summary
@@ -1325,6 +1461,28 @@ function renderBacktestTab() {
             <span class="bar-pct">${l.pct}%</span>
         </div>
     `).join('');
+
+    // Filtros avanzados - tabla comparativa
+    const filterTable = document.getElementById('filterStatsTable');
+    if (filterTable) {
+        filterTable.innerHTML = BACKTEST_STATS.filterStats.map((f, i) => {
+            const isBaseline = i === 0;
+            const wr = f.wr;
+            const wrColor = wr >= 65 ? '#22c55e' : wr >= 55 ? '#22c55e' : wr >= 45 ? '#eab308' : '#a1a1aa';
+            const pfColor = f.pf >= 2.0 ? '#22c55e' : f.pf >= 1.5 ? '#eab308' : '#a1a1aa';
+            const rowStyle = isBaseline ? 'opacity:0.6;' : '';
+            const badge = i === 1 ? ' <span style="background:rgba(34,197,94,0.2);color:#22c55e;border-radius:3px;padding:1px 5px;font-size:0.65rem;margin-left:4px;">RECOMENDADO</span>' :
+                          i === 2 ? ' <span style="background:rgba(168,85,247,0.2);color:#a855f7;border-radius:3px;padding:1px 5px;font-size:0.65rem;margin-left:4px;">MÁX WR</span>' : '';
+            return `<tr style="${rowStyle}">
+                <td style="font-weight:600;">${f.name}${badge}</td>
+                <td style="color:var(--text-muted);font-size:0.72rem;">${f.conditions}</td>
+                <td class="td-blue">${f.trades}</td>
+                <td style="color:${wrColor};font-weight:700;">${wr}%</td>
+                <td style="color:${pfColor};font-weight:600;">${f.pf}</td>
+                <td class="${f.pnl_usd >= 0 ? 'td-green' : 'td-red'}">$${f.pnl_usd.toLocaleString()}</td>
+            </tr>`;
+        }).join('');
+    }
 }
 
 // Event listeners
