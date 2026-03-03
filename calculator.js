@@ -24,10 +24,12 @@ const RANGE_FRACTIONS = {
 };
 
 // Entry modes - puntos desde el extremo real
+// FILTRO A ÓPTIMO: Entry=4pts / SL=2.5pts → WR=83%, PF=10.13 (10 años de datos)
 const entryModes = {
-    'aggressive':  { entry: 5.0, sl: 3.0, label: '5 pts' },
-    'standard':    { entry: 6.5, sl: 3.5, label: '6.5 pts' },
-    'conservative':{ entry: 8.0, sl: 4.0, label: '8 pts' }
+    'filtro_a':    { entry: 4.0, sl: 2.5,  label: '4 pts ★ Filtro A' },
+    'aggressive':  { entry: 5.0, sl: 3.0,  label: '5 pts' },
+    'standard':    { entry: 6.5, sl: 3.5,  label: '6.5 pts' },
+    'conservative':{ entry: 8.0, sl: 4.0,  label: '8 pts' }
 };
 
 // Parámetros del sistema
@@ -58,12 +60,38 @@ const BACKTEST_STATS = {
     // Filtro C: LONG + Vol<100% + Rango<40 → WR=61.5%, PF=1.77, 187 trades (RECOMENDADO)
     // Filtro D: LONG + Vol<100% + Rango<40 + Mar-Jue → WR=62.3%, PF=1.89, 114 trades
     filterStats: [
-        { name: 'Sin filtros (baseline)',              trades: 1545, wr: 36.1, pf: 1.11, pnl_usd: 56145,  conditions: 'Todos los setups' },
-        { name: 'LONG + Vol<100% + Rango<40',          trades: 187,  wr: 61.5, pf: 1.77, pnl_usd: 27631,  conditions: 'Gap DOWN + ATR5<ATR20 + Rango<40' },
-        { name: 'LONG + Vol<80% + Rango<40',           trades: 85,   wr: 72.9, pf: 2.82, pnl_usd: 20969,  conditions: 'Gap DOWN + ATR5<80%ATR20 + Rango<40' },
-        { name: 'LONG + Close D-1<35% + Rango<40',     trades: 78,   wr: 67.9, pf: 2.25, pnl_usd: 15634,  conditions: 'Gap DOWN + Close D-1 bajo + Rango<40' },
-        { name: 'LONG + Vol<100% + Rango<40 + Mar-Jue', trades: 114, wr: 62.3, pf: 1.89, pnl_usd: 19084,  conditions: 'Gap DOWN + ATR5<ATR20 + Rango<40 + Mar-Jue' },
+        { name: 'Sin filtros (baseline)',              trades: 1545, wr: 36.1, pf: 1.11,  pnl_usd: 56145,  conditions: 'Todos los setups' },
+        { name: 'LONG + Vol<100% + Rango<40',          trades: 187,  wr: 61.5, pf: 1.77,  pnl_usd: 27631,  conditions: 'Gap DOWN + ATR5<ATR20 + Rango<40' },
+        { name: 'LONG + Vol<80% + Rango<40',           trades: 85,   wr: 72.9, pf: 2.82,  pnl_usd: 20969,  conditions: 'Gap DOWN + ATR5<80%ATR20 + Rango<40' },
+        { name: 'LONG + Close D-1<35% + Rango<40',     trades: 78,   wr: 67.9, pf: 2.25,  pnl_usd: 15634,  conditions: 'Gap DOWN + Close D-1 bajo + Rango<40' },
+        { name: 'LONG + Vol<100% + Rango<40 + Mar-Jue', trades: 114, wr: 62.3, pf: 1.89,  pnl_usd: 19084,  conditions: 'Gap DOWN + ATR5<ATR20 + Rango<40 + Mar-Jue' },
     ],
+    // FILTRO A CON ENTRY OPTIMIZADO (análisis de movimiento desde extremo)
+    filtroAEntryStats: [
+        { entry: 4.0, sl: 2.5, trades: 88, wr: 83.0, pf: 10.13, pnl_usd: 44503 },
+        { entry: 4.0, sl: 3.0, trades: 88, wr: 84.1, pf: 10.12, pnl_usd: 44703 },
+        { entry: 5.0, sl: 2.5, trades: 88, wr: 83.0, pf: 8.13,  pnl_usd: 40103 },
+        { entry: 5.0, sl: 3.0, trades: 88, wr: 84.1, pf: 8.20,  pnl_usd: 40303 },
+        { entry: 6.5, sl: 3.5, trades: 88, wr: 84.1, pf: 5.76,  pnl_usd: 33353 },
+        { entry: 8.0, sl: 4.0, trades: 87, wr: 86.2, pf: 4.86,  pnl_usd: 27766 },
+    ],
+    // Estadísticas de movimiento desde el extremo (Filtro A, 88 trades, 10 años)
+    extremeMovement: {
+        // Distancia del extremo al cierre del día
+        distToClose: { mean: 13.14, median: 10.62, p25: 3.50, p75: 20.00, p90: 30.32 },
+        pctAboveExtreme: { '0pts': 87.5, '5pts': 69.3, '10pts': 52.3, '15pts': 38.6, '20pts': 25.0 },
+        // MAE: máximo adverso desde el extremo
+        mae: { mean: 3.66, median: 0.0, p75: 6.88, p90: 10.50, p95: 15.21 },
+        maePct: { 'lt2': 65.9, 'lt3': 67.0, 'lt4': 68.2, 'lt5': 71.6, 'lt6': 72.7 },
+        // MFE: máximo favorable desde el extremo
+        mfe: { mean: 25.15, median: 22.75, p25: 16.19, p50: 22.75, p75: 31.50, p90: 41.40 },
+        // Post-touch (datos 15m)
+        postTouch: {
+            pctSube4: 98.9, pctSube5: 98.9, pctSube8: 96.6,
+            pctBaja3: 33.0, pctBaja4: 30.7, pctBaja5: 28.4,
+            medianUp: 20.50, medianDown: 0.0
+        }
+    },
     // Win rate por tamaño de gap
     gapAnalysis: [
         { bucket: '0.1-0.2%', wr: 38.7, trades: 302 },

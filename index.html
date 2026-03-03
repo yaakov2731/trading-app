@@ -743,9 +743,10 @@
                     <div class="input-group">
                         <label for="entryMode">Modo Entry</label>
                         <select id="entryMode">
-                            <option value="aggressive">Agresivo (5 pts) — Gap DOWN</option>
-                            <option value="standard" selected>Estándar (6.5 pts)</option>
-                            <option value="conservative">Conservador (8 pts) — Gap UP</option>
+                            <option value="filtro_a" selected>★ Filtro A (4 pts / SL 2.5) — WR=83%, PF=10</option>
+                            <option value="aggressive">Agresivo (5 pts / SL 3.0) — WR=84%, PF=8.2</option>
+                            <option value="standard">Estándar (6.5 pts / SL 3.5)</option>
+                            <option value="conservative">Conservador (8 pts / SL 4.0) — Gap UP</option>
                         </select>
                     </div>
                     <div class="input-group full">
@@ -1045,6 +1046,60 @@
                 ¿Con qué frecuencia el precio del día siguiente toca cada nivel del rango del día anterior? (tolerancia ±0.5 pts)
             </p>
             <div class="bar-chart" id="levelHitsChart"></div>
+        </div>
+
+        <!-- FILTRO A: MOVIMIENTO DESDE EL EXTREMO -->
+        <div class="card" style="margin-top:1.5rem; border-color: rgba(168,85,247,0.3);">
+            <div class="card-header">
+                <h2 class="card-title"><span class="card-title-icon">📍</span>Filtro A — Movimiento desde el Extremo (88 trades, 10 años)</h2>
+                <span class="badge" style="background:rgba(168,85,247,0.15);color:#a855f7;border:1px solid rgba(168,85,247,0.3);">Datos 15m reales</span>
+            </div>
+            <div class="three-col" style="margin-bottom:1rem;">
+                <div class="card" style="background:var(--bg-secondary);">
+                    <div style="font-size:0.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.5rem;">Distancia Extremo → Cierre</div>
+                    <div style="font-size:1.4rem;font-weight:700;color:var(--green);">+13.1 pts</div>
+                    <div style="font-size:0.72rem;color:var(--text-muted);margin-top:0.25rem;">Media | Mediana: +10.6 pts</div>
+                    <div style="font-size:0.72rem;color:var(--text-secondary);margin-top:0.4rem;">
+                        87.5% cierran por encima del extremo<br>
+                        69.3% cierran &gt;5 pts arriba<br>
+                        52.3% cierran &gt;10 pts arriba
+                    </div>
+                </div>
+                <div class="card" style="background:var(--bg-secondary);">
+                    <div style="font-size:0.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.5rem;">MAE — Máximo Adverso</div>
+                    <div style="font-size:1.4rem;font-weight:700;color:var(--yellow);">3.7 pts</div>
+                    <div style="font-size:0.72rem;color:var(--text-muted);margin-top:0.25rem;">Media | Mediana: 0 pts</div>
+                    <div style="font-size:0.72rem;color:var(--text-secondary);margin-top:0.4rem;">
+                        65.9% con MAE &lt;2 pts (SL 2.5 no toca)<br>
+                        68.2% con MAE &lt;4 pts<br>
+                        P90 = 10.5 pts (casos extremos)
+                    </div>
+                </div>
+                <div class="card" style="background:var(--bg-secondary);">
+                    <div style="font-size:0.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.5rem;">Post-Touch (datos 15m)</div>
+                    <div style="font-size:1.4rem;font-weight:700;color:var(--green);">98.9%</div>
+                    <div style="font-size:0.72rem;color:var(--text-muted);margin-top:0.25rem;">sube &gt;4 pts tras tocar el extremo</div>
+                    <div style="font-size:0.72rem;color:var(--text-secondary);margin-top:0.4rem;">
+                        98.9% sube &gt;5 pts tras el extremo<br>
+                        96.6% sube &gt;8 pts tras el extremo<br>
+                        MFE mediana: +20.5 pts desde extremo
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top:0.75rem;">
+                <div style="font-size:0.72rem;color:var(--text-muted);margin-bottom:0.5rem;font-weight:600;">Comparativa de Entry Offset (Filtro A, 88 trades):</div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead><tr><th>Entry</th><th>SL</th><th>Trades</th><th>Win Rate</th><th>Profit Factor</th><th>P&amp;L Total</th></tr></thead>
+                        <tbody id="filtroAEntryTable"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div style="margin-top:0.75rem;padding:0.6rem;background:rgba(168,85,247,0.05);border:1px solid rgba(168,85,247,0.2);border-radius:6px;font-size:0.72rem;color:var(--text-secondary);">
+                <strong style="color:#a855f7;">Conclusión:</strong> Con Filtro A activo, el precio sube &gt;4 pts desde el extremo en el 98.9% de los casos. 
+                El entry a <strong>4 pts del extremo</strong> captura ese movimiento con WR=83% y PF=10.13. 
+                El SL a 2.5 pts del extremo es suficiente: solo el 33% de los casos baja más de 3 pts post-touch.
+            </div>
         </div>
 
         <!-- FILTROS AVANZADOS - TABLA COMPARATIVA -->
@@ -1461,6 +1516,26 @@ function renderBacktestTab() {
             <span class="bar-pct">${l.pct}%</span>
         </div>
     `).join('');
+
+    // Filtro A - tabla de entry offset
+    const filtroATable = document.getElementById('filtroAEntryTable');
+    if (filtroATable && BACKTEST_STATS.filtroAEntryStats) {
+        filtroATable.innerHTML = BACKTEST_STATS.filtroAEntryStats.map((r, i) => {
+            const isOptimal = r.entry === 4.0 && r.sl === 2.5;
+            const rowStyle = isOptimal ? 'background:rgba(168,85,247,0.08);' : '';
+            const badge = isOptimal ? ' <span style="background:rgba(168,85,247,0.2);color:#a855f7;border-radius:3px;padding:1px 5px;font-size:0.65rem;margin-left:4px;">RECOMENDADO</span>' : '';
+            const wrColor = r.wr >= 84 ? '#22c55e' : r.wr >= 80 ? '#22c55e' : '#eab308';
+            const pfColor = r.pf >= 8 ? '#22c55e' : r.pf >= 5 ? '#eab308' : '#a1a1aa';
+            return `<tr style="${rowStyle}">
+                <td style="font-weight:600;">${r.entry} pts${badge}</td>
+                <td>${r.sl} pts</td>
+                <td class="td-blue">${r.trades}</td>
+                <td style="color:${wrColor};font-weight:700;">${r.wr}%</td>
+                <td style="color:${pfColor};font-weight:700;">${r.pf}</td>
+                <td class="td-green">$${r.pnl_usd.toLocaleString()}</td>
+            </tr>`;
+        }).join('');
+    }
 
     // Filtros avanzados - tabla comparativa
     const filterTable = document.getElementById('filterStatsTable');
