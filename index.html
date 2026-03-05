@@ -1279,6 +1279,14 @@ function calculateLevels() {
         return;
     }
 
+    // Auto-suggest entry mode based on gap direction (usando lógica validada de 10 años)
+    const suggestedMode = suggestEntryMode(result.isGapUp, entryModeKey);
+    if (suggestedMode) {
+        document.getElementById('entryMode').value = suggestedMode;
+        // Recalculate with the suggested mode
+        return calculateLevels();
+    }
+
     // Show results
     document.getElementById('resultsSection').classList.add('visible');
 
@@ -1290,7 +1298,7 @@ function calculateLevels() {
     // Meta tags
     const gapSign = result.gap >= 0 ? '+' : '';
     document.getElementById('gapTag').innerHTML = `<span>Gap: ${gapSign}${result.gap.toFixed(2)} (${gapSign}${result.gapPct.toFixed(2)}%)</span>`;
-    document.getElementById('rangeTag').innerHTML = `<span>Rango Total D-1: ${result.prevRangeTotal.toFixed(1)} pts</span>`;
+    document.getElementById('rangeTag').innerHTML = `<span>Rango: ${result.prevRangeTotal.toFixed(1)} pts</span>`;
     document.getElementById('wrTag').innerHTML = `<span>WR esperado: ~${result.expectedWR.toFixed(1)}%</span>`;
 
     // Entry/SL labels
@@ -1426,9 +1434,13 @@ function updateFilter(id, passed, value, forceClass = null) {
 
 function copyLevel(event, elementId) {
     const value = document.getElementById(elementId).textContent;
+    const btn = event.target;
     navigator.clipboard.writeText(value).then(() => {
-        const btn = event.target;
         btn.textContent = '✓';
+        setTimeout(() => btn.textContent = 'Copy', 800);
+    }).catch(err => {
+        console.error('Clipboard error:', err);
+        btn.textContent = '✗';
         setTimeout(() => btn.textContent = 'Copy', 800);
     });
 }

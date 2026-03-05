@@ -48,7 +48,6 @@ describe('DOM structure', () => {
     });
 
     test('all select elements exist', () => {
-        expect(document.getElementById('vixLevel')).not.toBeNull();
         expect(document.getElementById('entryMode')).not.toBeNull();
         expect(document.getElementById('instrument')).not.toBeNull();
     });
@@ -62,8 +61,8 @@ describe('DOM structure', () => {
     test('all result display elements exist', () => {
         const ids = [
             'entryLevel', 'slLevel', 'tp1Level', 'tp2Level', 'tp3Level',
-            'expectedRange', 'slPoints', 'potentialProfit', 'riskAmount',
-            'rrRatio', 'directionBadge', 'vixTag', 'gapTag', 'rangeTag',
+            'slPoints', 'potentialProfit', 'riskAmount',
+            'rrRatio', 'directionBadge', 'gapTag', 'rangeTag', 'wrTag',
             'filterGap', 'filterRange', 'filterGapType', 'filterExtreme',
             'filterAlert', 'checklistCounter'
         ];
@@ -134,10 +133,10 @@ describe('calculateLevels – UI integration', () => {
         });
     });
 
-    test('displays expected range', () => {
+    test('displays range in rangeTag', () => {
         fillInputs();
         calculateLevels();
-        const range = document.getElementById('expectedRange').textContent;
+        const range = document.getElementById('rangeTag').textContent;
         expect(range).toContain('pts');
     });
 
@@ -200,16 +199,7 @@ describe('calculateLevels – UI integration', () => {
         window.alert = jest.fn();
         fillInputs({ prevHigh: '' });
         calculateLevels();
-        expect(window.alert).toHaveBeenCalledWith(expect.stringContaining('Complete'));
-    });
-
-    test('VIX meta tag updates on calculation', () => {
-        fillInputs();
-        document.getElementById('vixLevel').value = 'high';
-        calculateLevels();
-        const vixTag = document.getElementById('vixTag');
-        expect(vixTag.classList.contains('vix-high')).toBe(true);
-        expect(vixTag.textContent).toContain('0.92');
+        expect(window.alert).toHaveBeenCalledWith(expect.stringContaining('Completar'));
     });
 
     test('gap meta tag shows gap value', () => {
@@ -251,10 +241,10 @@ describe('calculateLevels – UI integration', () => {
         calculateLevels();
         const mesProfit = document.getElementById('potentialProfit').textContent;
 
-        // ES multiplier (50) is 10x MES (5), allow $1 rounding tolerance
+        // ES multiplier (50) is 10x MES (5), allow $5 rounding tolerance (toFixed(0) rounding)
         const esVal = parseFloat(esProfit.replace('$', ''));
         const mesVal = parseFloat(mesProfit.replace('$', ''));
-        expect(Math.abs(esVal - mesVal * 10)).toBeLessThanOrEqual(1);
+        expect(Math.abs(esVal - mesVal * 10)).toBeLessThanOrEqual(5);
     });
 });
 
@@ -437,12 +427,8 @@ describe('calculateLevels – auto-suggest entry mode', () => {
 // Select default values
 // ──────────────────────────────────────────────
 describe('Default select values', () => {
-    test('VIX level defaults to normal', () => {
-        expect(document.getElementById('vixLevel').value).toBe('normal');
-    });
-
-    test('entry mode defaults to standard', () => {
-        expect(document.getElementById('entryMode').value).toBe('standard');
+    test('entry mode defaults to filtro_a (WR=83% con condiciones óptimas)', () => {
+        expect(document.getElementById('entryMode').value).toBe('filtro_a');
     });
 
     test('instrument defaults to ES', () => {

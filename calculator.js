@@ -37,8 +37,12 @@ const params = {
     tp1Pct: 0.50,
     tp2Pct: 0.75,
     tp3Pct: 0.90,
-    minGapPct: 0.10,    // Gap mínimo 0.10% (ajustado al backtest real)
-    minPrevRange: 15,   // Rango mínimo 15 pts
+    minGapPct: 0.10,        // Gap mínimo 0.10% (ajustado al backtest real)
+    minPrevRange: 15,       // Rango mínimo 15 pts
+    gapMoveEstimate: 0.42,  // Factor estimación extremo (42% del rango previo)
+    rangeHighWarn: 60,      // Rango >60pts: 21.9% WR → zona de advertencia
+    rangeExtremeWarn: 100,  // Rango >100pts: 16.7% WR → zona crítica
+    bigGapWarn: 1.0,        // Gap >1%: 28.3% WR → advertencia
 };
 
 // Estadísticas reales del backtest (10 años, 2016-2026)
@@ -266,15 +270,41 @@ function computeLevels({
     } else {
         // Estimación: el extremo se forma dentro del rango esperado
         // Usamos el rango total del día anterior como referencia
-        const gapMove = prevRangeTotal * 0.42;
+        const gapMove = prevRangeTotal * params.gapMoveEstimate;
         baseExtreme = isGapUp
             ? todayOpen + gapMove
             : todayOpen - gapMove;
     }
 
     // --------------------------------------------------------
-    // 5. ENTRY, SL, TPs
-    // --------------------------------------------------------
+    // 5. ENTRY, SL, TPs DINÁMICOS
+    // ─────────────────────────────────────────────────────
+    // Los TPs se ajustan según el tamaño del rango previo.
+    // Lógica: en rangos pequeños (alta WR) podemos pedir más del rango;
+    // en rangos grandes (baja WR) conviene asegurar ganancias antes.
+    //
+    // Fuente: rangeAnalysis + extremeMovement data (MFE mediana).
+    // Con range~30pts y Filtro A: MFE mediana=22.75pts ≈ 75% del rango → TP2 en 75% es preciso.
+    // Con range>60pts y WR=21.9%: TP2 en 75% raramente se alcanza → moverlo a 60%.
+    // ─────────────────────────────────────────────────────
+    let tp1Pct, tp2Pct, tp3Pct;
+    if (prevRangeTotal < 25) {
+        // Rango pequeño: WR=50.1%. Alta probabilidad pero rango limitado.
+        // Targets moderados para no perder la operación por ser muy ambicioso.
+        tp1Pct = 0.50; tp2Pct = 0.70; tp3Pct = 0.85;
+    } else if (prevRangeTotal < 40) {
+        // Rango óptimo: WR=43.8% + filtros → 61-72%. Targets estándar.
+        // La MFE mediana de Filtro A (22.75pts con range~30pts) ≈ 75% → TP2 óptimo.
+        tp1Pct = params.tp1Pct; tp2Pct = params.tp2Pct; tp3Pct = params.tp3Pct; // 50/75/90
+    } else if (prevRangeTotal < 60) {
+        // Rango mediano: WR=32.2%. Asegurar ganancias más temprano.
+        tp1Pct = 0.40; tp2Pct = 0.62; tp3Pct = 0.80;
+    } else {
+        // Rango grande: WR<22%. Muy difícil alcanzar el rango completo.
+        // Salir rápido y reducir pérdidas.
+        tp1Pct = 0.35; tp2Pct = 0.55; tp3Pct = 0.75;
+    }
+
     const entryPts = entryMode.entry;
     const slPts    = entryMode.sl;
     let entry, sl, tp1, tp2, tp3;
@@ -282,15 +312,15 @@ function computeLevels({
     if (direction === 'SHORT') {
         entry = baseExtreme - entryPts;
         sl    = baseExtreme + slPts;
-        tp1   = baseExtreme - (prevRangeTotal * params.tp1Pct);
-        tp2   = baseExtreme - (prevRangeTotal * params.tp2Pct);
-        tp3   = baseExtreme - (prevRangeTotal * params.tp3Pct);
+        tp1   = baseExtreme - (prevRangeTotal * tp1Pct);
+        tp2   = baseExtreme - (prevRangeTotal * tp2Pct);
+        tp3   = baseExtreme - (prevRangeTotal * tp3Pct);
     } else {
         entry = baseExtreme + entryPts;
         sl    = baseExtreme - slPts;
-        tp1   = baseExtreme + (prevRangeTotal * params.tp1Pct);
-        tp2   = baseExtreme + (prevRangeTotal * params.tp2Pct);
-        tp3   = baseExtreme + (prevRangeTotal * params.tp3Pct);
+        tp1   = baseExtreme + (prevRangeTotal * tp1Pct);
+        tp2   = baseExtreme + (prevRangeTotal * tp2Pct);
+        tp3   = baseExtreme + (prevRangeTotal * tp3Pct);
     }
 
     const riskPoints   = Math.abs(entry - sl);
@@ -331,6 +361,43 @@ function computeLevels({
     // WR esperado con filtros activos
     const filteredWR = filterAnalysis.bestFilterWR || expectedWR;
 
+    // WR combinado: dirección + tamaño de rango (insight clave del backtest de 10 años)
+    // SHORT tiene WR base de 31.7%; LONG varía fuertemente según tamaño del rango previo
+    let expectedWR_combined;
+    if (direction === 'SHORT') {
+        if (prevRangeTotal >= 100) expectedWR_combined = 15.0;       // Rango extremo → evitar
+        else if (prevRangeTotal >= 60) expectedWR_combined = 20.0;   // Rango alto → muy difícil
+        else if (prevRangeTotal >= 40) expectedWR_combined = 27.0;   // Rango medio → bajo
+        else expectedWR_combined = 31.7;                              // Rango normal SHORT base
+    } else {
+        // LONG: el tamaño del rango es el predictor más fuerte
+        if (prevRangeTotal < 25)       expectedWR_combined = 50.1;
+        else if (prevRangeTotal < 40)  expectedWR_combined = 43.8;
+        else if (prevRangeTotal < 60)  expectedWR_combined = 32.2;
+        else if (prevRangeTotal < 100) expectedWR_combined = 21.9;
+        else                           expectedWR_combined = 16.7;
+    }
+    // Penalizar gaps grandes (>1%): -8pp en cualquier dirección
+    if (gapPct >= params.bigGapWarn) {
+        expectedWR_combined = Math.max(10, expectedWR_combined - 8);
+    }
+
+    // --------------------------------------------------------
+    // 8. SETUP SCORE (0–100) y EXPECTED VALUE (EV)
+    // ─────────────────────────────────────────────────────
+    // Setup Score: combina todos los factores en una puntuación única.
+    const setupScore = computeSetupScore({
+        direction, prevRangeTotal, gapPct, volRegime, closePosD1, dow, hasExtremeReal
+    });
+    const setupScoreInfo = setupScoreLabel(setupScore);
+
+    // Expected Value (EV) en puntos:
+    // EV = WR × rewardPoints - (1-WR) × riskPoints
+    // Si EV > 0 → expectativa positiva (vale la pena operar)
+    // Si EV < 0 → expectativa negativa (no operar aunque el setup parezca válido)
+    const wrDecimal = expectedWR_combined / 100;
+    const expectedValue = (wrDecimal * rewardPoints) - ((1 - wrDecimal) * riskPoints);
+
     return {
         // Rango
         prevRangeTotal,
@@ -358,7 +425,14 @@ function computeLevels({
         // Win rate esperado
         expectedWR,
         expectedWR_range,
+        expectedWR_combined,
         filteredWR,
+        // Setup Score y Expected Value
+        setupScore,
+        setupScoreInfo,
+        expectedValue,
+        // TPs dinámicos (porcentajes usados)
+        tp1Pct, tp2Pct, tp3Pct,
         volRegime,
         closePosD1,
         // Instrumento
@@ -453,20 +527,165 @@ function computeAdvancedFilters({ isGapUp, prevRangeTotal, gapPct, volRegime, cl
 }
 
 /**
+ * Calcula un Score de calidad del setup (0–100 puntos).
+ *
+ * Basado exclusivamente en datos reales del backtest de 10 años (2016–2026).
+ * Cada factor aporta puntos proporcionales a su impacto histórico en el WR.
+ *
+ * Escala:
+ *   ≥ 70 → PREMIUM  (WR esperado ~65–83%)
+ *   50–69 → BUENO   (WR esperado ~45–65%)
+ *   30–49 → NEUTRAL (WR esperado ~32–45%)
+ *   < 30  → EVITAR  (WR esperado <32%, incluye SHORT sin filtros)
+ *
+ * @param {object} params
+ * @returns {number} score (0–100)
+ */
+function computeSetupScore({ direction, prevRangeTotal, gapPct, volRegime, closePosD1, dow, hasExtremeReal }) {
+    let score = 25; // base neutral
+
+    // ── DIRECCIÓN (mayor peso individual) ──────────────────────────
+    // LONG base: WR=42.1%; SHORT base: WR=31.7%, PF=0.91 (negativo)
+    if (direction === 'LONG') score += 15;
+    else score -= 15;  // SHORT: -15 puntos por WR estructuralmente inferior
+
+    // ── RANGO PREVIO (predictor más fuerte del WR según backtest) ──
+    // Fuente: rangeAnalysis en BACKTEST_STATS
+    if      (prevRangeTotal < 25)  score += 25;  // WR=50.1% → bonus máximo
+    else if (prevRangeTotal < 40)  score += 15;  // WR=43.8% → bueno
+    else if (prevRangeTotal < 60)  score += 0;   // WR=32.2% → neutral, sin cambio
+    else if (prevRangeTotal < 100) score -= 18;  // WR=21.9% → zona peligrosa
+    else                           score -= 30;  // WR=16.7% → evitar
+
+    // ── TAMAÑO DEL GAP ─────────────────────────────────────────────
+    // Fuente: gapAnalysis. Gaps grandes indican eventos atípicos.
+    if      (gapPct < 0.3)  score += 5;   // WR≈38%  → ligeramente mejor
+    else if (gapPct < 1.0)  score += 0;   // WR≈36-37% → neutral
+    else                    score -= 12;  // WR=28.3% → penalización
+
+    // ── RÉGIMEN DE VOLATILIDAD (ATR5/ATR20) ────────────────────────
+    // Fuente: filterStats (Filtro A/C). Solo disponible si el usuario ingresa ATR.
+    if (volRegime !== null) {
+        if      (volRegime < 0.80) score += 20;  // Filtro A: WR=72.9% → +20pts
+        else if (volRegime < 1.00) score += 10;  // Filtro C: WR=61.5% → +10pts
+        else                       score -= 5;   // Volatilidad elevada → penalización leve
+    }
+
+    // ── POSICIÓN DEL CIERRE D-1 ─────────────────────────────────────
+    // Fuente: Filtro B. Close en zona baja (bottom 35%) → WR=67.9%
+    if (closePosD1 !== null) {
+        if (closePosD1 < 0.35) score += 10;  // Filtro B activo → +10pts
+    }
+
+    // ── DÍA DE LA SEMANA ────────────────────────────────────────────
+    // Fuente: Filtro D. Martes/Miércoles/Jueves son los mejores días.
+    if (dow !== null) {
+        if ([1, 2, 3].includes(dow)) score += 5;   // Mar-Jue → +5pts
+        else                          score -= 3;  // Lun/Vie → leve penalización
+    }
+
+    // ── EXTREMO REAL CONFIRMADO ─────────────────────────────────────
+    // Sin extremo real, los niveles son estimados (menor precisión)
+    if (hasExtremeReal) score += 5;
+
+    return Math.max(0, Math.min(100, score));
+}
+
+/**
+ * Calcula etiqueta y clase CSS del setup score.
+ * @param {number} score - 0 a 100
+ * @returns {{ label: string, cssClass: string }}
+ */
+function setupScoreLabel(score) {
+    if (score >= 70) return { label: 'PREMIUM ★★★',  cssClass: 'score-premium' };
+    if (score >= 50) return { label: 'BUENO ★★',     cssClass: 'score-good'    };
+    if (score >= 30) return { label: 'NEUTRAL ★',    cssClass: 'score-neutral' };
+    return              { label: 'EVITAR ✗',         cssClass: 'score-avoid'   };
+}
+
+/**
  * Calcula los filtros del setup.
+ *
+ * Filtros críticos (criticalPass = false → NO operar):
+ *   - gapFilter:   gap >= 0.10% mínimo
+ *   - rangeFilter: rango previo >= 15 pts mínimo
+ *
+ * Filtros informativos (warnings basados en 10 años de backtest):
+ *   - gapTypeFilter:    LONG (gap DOWN) preferido; SHORT → WR=31.7%, PF=0.91
+ *   - extremeFilter:    extremo real confirmado (mejora precisión de niveles)
+ *   - rangeHighFilter:  rango >60pts → WR=21.9% (zona de alto riesgo)
+ *   - bigGapFilter:     gap >1% → WR=28.3% (peor rendimiento por tamaño de gap)
  */
 function computeFilters({ gapPct, prevRangeTotal, isGapUp, hasExtremeReal }) {
+    // Filtros críticos: definen si el setup es operable
     const gapFilter   = gapPct >= params.minGapPct;
     const rangeFilter = prevRangeTotal >= params.minPrevRange;
     const criticalPass = gapFilter && rangeFilter;
 
-    let alertType;
-    if (!criticalPass) alertType = 'danger';
-    else if (isGapUp) alertType = 'warning-gap-up';
-    else if (!hasExtremeReal) alertType = 'warning-pending';
-    else alertType = 'success';
+    // Filtros informativos: mejoran la selección de setups
+    const gapTypeFilter   = !isGapUp;                                     // LONG (gap DOWN) preferido
+    const extremeFilter   = hasExtremeReal === true;                       // extremo real confirmado
+    const rangeHighFilter = prevRangeTotal >= params.rangeHighWarn;        // >60pts: 21.9% WR
+    const bigGapFilter    = gapPct >= params.bigGapWarn;                   // >1%: 28.3% WR
 
-    return { gapFilter, rangeFilter, criticalPass, alertType, hasExtremeReal };
+    let alertType;
+    if (!criticalPass)      alertType = 'danger';
+    else if (isGapUp)       alertType = 'warning-gap-up';
+    else if (!hasExtremeReal) alertType = 'warning-pending';
+    else                    alertType = 'success';
+
+    return {
+        gapFilter, rangeFilter, criticalPass,
+        gapTypeFilter, extremeFilter,
+        rangeHighFilter, bigGapFilter,
+        alertType, hasExtremeReal
+    };
+}
+
+/**
+ * Sugiere el modo de entrada óptimo según la dirección del gap.
+ * - SHORT (gap UP):  mínimo 'standard' para evitar whipsaws
+ * - LONG (gap DOWN): máximo 'standard' para no perder el movimiento
+ *
+ * @param {boolean} isGapUp - true si el gap es alcista
+ * @param {string} entryModeKey - modo actual
+ * @returns {string|null} - nuevo modo sugerido, o null si ya es correcto
+ */
+function suggestEntryMode(isGapUp, entryModeKey) {
+    const modeOrder = ['filtro_a', 'aggressive', 'standard', 'conservative'];
+    const currentIdx = modeOrder.indexOf(entryModeKey);
+    if (currentIdx === -1) return null;
+
+    if (isGapUp) {
+        // SHORT: necesita al menos 'standard' (índice 2)
+        if (currentIdx < 2) return 'standard';
+    } else {
+        // LONG: no usar 'conservative' (índice 3)
+        if (currentIdx === 3) return 'aggressive';
+    }
+    return null;
+}
+
+/**
+ * Retorna la clase CSS según si el filtro pasó o no.
+ * @param {boolean} passed
+ * @param {string} [forceClass] - clase forzada (ignora passed)
+ * @returns {string}
+ */
+function getFilterStatusClass(passed, forceClass) {
+    if (forceClass !== undefined) return forceClass;
+    return passed ? 'pass' : 'fail';
+}
+
+/**
+ * Retorna el icono según el estado del filtro.
+ * @param {string} status - 'pass' | 'warn' | 'fail'
+ * @returns {string}
+ */
+function getFilterIcon(status) {
+    if (status === 'pass') return '✓';
+    if (status === 'warn') return '⚠';
+    return '✗';
 }
 
 // Export para Node.js (tests)
@@ -474,5 +693,7 @@ if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
         instruments, entryModes, params, RANGE_FRACTIONS, BACKTEST_STATS,
         calcTrueRange, calcRangeLevels, computeLevels, computeFilters,
+        computeAdvancedFilters, computeSetupScore, setupScoreLabel,
+        suggestEntryMode, getFilterStatusClass, getFilterIcon,
     };
 }
