@@ -406,6 +406,10 @@
             border-bottom: none;
         }
         .range-level-row.current-zone .range-level-name { color: var(--blue); }
+        /* Midpoint divider */
+        .range-level-row [style*="font-weight:700"] {
+            letter-spacing: 0.04em;
+        }
 
         /* FILTERS */
         .filters-section {
@@ -825,6 +829,7 @@
                 <div class="meta-info">
                     <div id="gapTag" class="meta-tag"><span>Gap: --</span></div>
                     <div id="rangeTag" class="meta-tag"><span>Rango Total: --</span></div>
+                    <div id="zoneTag" class="meta-tag"><span>Zona: --</span></div>
                     <div id="wrTag" class="meta-tag wr-tag"><span>WR esperado: --</span></div>
                 </div>
 
@@ -872,8 +877,8 @@
                 <!-- NIVELES DE RANGO (metodología libreta) -->
                 <div class="range-levels-section">
                     <div class="range-levels-title">
-                        <span>Niveles de Rango (Fracciones D-1)</span>
-                        <span style="color:var(--text-muted);font-size:0.62rem;font-weight:400">R×0.182 / R×0.364 / R×0.734</span>
+                        <span>Niveles de Rango D-1 (R/8 · R/4 · R/2)</span>
+                        <span style="color:var(--text-muted);font-size:0.62rem;font-weight:400">SELL ZONE ▲ Midpoint ▼ BUY ZONE</span>
                     </div>
                     <div id="rangeLevelsGrid"></div>
                 </div>
@@ -1304,6 +1309,20 @@ function calculateLevels() {
     document.getElementById('rangeTag').innerHTML = `<span>Rango: ${result.prevRangeTotal.toFixed(1)} pts</span>`;
     document.getElementById('wrTag').innerHTML = `<span>WR esperado: ~${result.expectedWR.toFixed(1)}%</span>`;
 
+    // Zona del open
+    const zoneEl = document.getElementById('zoneTag');
+    if (result.openZone === 'BUY') {
+        zoneEl.style.background = 'rgba(34,197,94,0.12)';
+        zoneEl.style.borderColor = 'rgba(34,197,94,0.4)';
+        zoneEl.style.color = 'var(--green)';
+        zoneEl.innerHTML = `<span>▼ BUY ZONE (${result.openZonePct}%)</span>`;
+    } else {
+        zoneEl.style.background = 'rgba(239,68,68,0.12)';
+        zoneEl.style.borderColor = 'rgba(239,68,68,0.4)';
+        zoneEl.style.color = 'var(--accent-light)';
+        zoneEl.innerHTML = `<span>▲ SELL ZONE (${result.openZonePct}%)</span>`;
+    }
+
     // Entry/SL labels — indicar si son niveles estimados
     const estSuffix = result.hasExtremeReal ? '' : ' (est.)';
     document.getElementById('entryLabel').textContent = `Entry ${result.entryPts} pts del extremo${estSuffix}`;
@@ -1319,19 +1338,20 @@ function calculateLevels() {
         extremePanel.innerHTML = `<strong>Extremo REAL confirmado:</strong> ${result.baseExtreme.toFixed(2)} &nbsp;|&nbsp; Niveles calculados con precisión`;
     } else if (result.estimationBand) {
         const band = result.estimationBand;
-        const gapPts = Math.abs(result.gap);
+        const isLong = result.direction === 'LONG';
         extremePanel.style.display = 'block';
         extremePanel.style.background = 'rgba(234,179,8,0.08)';
         extremePanel.style.borderColor = 'rgba(234,179,8,0.40)';
         extremePanel.style.color = 'var(--yellow)';
         extremePanel.innerHTML = `
-            <strong>⚠ Extremo ESTIMADO:</strong> ~${result.baseExtreme.toFixed(2)}&nbsp;&nbsp;
+            <strong>⚠ Extremo ESTIMADO (${isLong ? 'BUY ZONE' : 'SELL ZONE'}):</strong>
+            ~${result.baseExtreme.toFixed(2)}&nbsp;&nbsp;
             <span style="color:var(--text-muted);font-size:0.72rem">
-                Rango probable: ${band.pessimistic.toFixed(2)} → ${band.optimistic.toFixed(2)}
-                &nbsp;(±${(gapPts * 0.20).toFixed(1)} pts de incertidumbre)
+                ${band.note}
             </span><br>
             <span style="font-size:0.7rem;color:var(--text-muted)">
-                Los niveles son preliminares. Ingresar el extremo real (H/L primera hora RTH 9:30–10:30) para mayor precisión.
+                El precio tiende a buscar el 25%–37.5% del rango en dirección del gap antes de reversar.
+                Ingresar extremo real (H/L primera hora 9:30–10:30) para niveles precisos.
             </span>`;
     } else {
         extremePanel.style.display = 'none';
@@ -1427,31 +1447,54 @@ function calculateLevels() {
 }
 
 function renderRangeLevels(result) {
-    const rl = result.rangeLevels;
-    const R  = result.prevRangeTotal;
-    const { f1, f2, f3 } = RANGE_FRACTIONS;
+    const rl     = result.rangeLevels;
+    const R      = result.prevRangeTotal;
+    const isLong = result.direction === 'LONG';
+    const baseEx = result.baseExtreme;
+    const todayOpen = parseFloat(document.getElementById('todayOpen').value);
 
+    // Niveles con zona SELL (rojo) / MID (azul) / BUY (verde)
     const levels = [
-        { name: 'H ext (+R×0.182)', value: rl.H_ext,    pct: '+18.2%', note: 'Extensión alcista' },
-        { name: 'H (True High D-1)', value: rl.H,       pct: '100%',   note: 'Resistencia clave' },
-        { name: 'H − R×0.182 (26)', value: rl.H_f1,    pct: '81.8%',  note: `−${(R*f1).toFixed(1)} pts` },
-        { name: 'H − R×0.364 (52)', value: rl.H_f2,    pct: '63.6%',  note: `−${(R*f2).toFixed(1)} pts` },
-        { name: 'H − R×0.734 (105)',value: rl.H_f3,    pct: '26.6%',  note: `−${(R*f3).toFixed(1)} pts` },
-        { name: 'Midpoint',          value: rl.midpoint, pct: '50.0%',  note: 'Centro del rango' },
-        { name: 'L + R×0.734',       value: rl.L_f3,    pct: '73.4%',  note: `+${(R*f3).toFixed(1)} pts` },
-        { name: 'L + R×0.364',       value: rl.L_f2,    pct: '36.4%',  note: `+${(R*f2).toFixed(1)} pts` },
-        { name: 'L + R×0.182',       value: rl.L_f1,    pct: '18.2%',  note: `+${(R*f1).toFixed(1)} pts` },
-        { name: 'L (True Low D-1)',   value: rl.L,       pct: '0%',     note: 'Soporte clave' },
-        { name: 'L ext (−R×0.182)',   value: rl.L_ext,   pct: '−18.2%', note: 'Extensión bajista' },
+        { key: 'H_ext',   name: 'Extensión +25%',      value: rl.H_ext,    pct: '+25%',   note: 'Ext alcista',                zone: 'ext'  },
+        { key: 'H',       name: 'High D-1',             value: rl.H,        pct: '100%',   note: isLong ? 'Target reversa' : 'Extremo SHORT', zone: 'sell' },
+        { key: 'H_r8',    name: 'High − R/8',           value: rl.H_r8,     pct: '87.5%',  note: `−${(R/8).toFixed(1)} pts`,   zone: 'sell' },
+        { key: 'H_r4',    name: 'High − R/4',           value: rl.H_r4,     pct: '75.0%',  note: `−${(R/4).toFixed(1)} pts`,   zone: 'sell' },
+        { key: 'H_3r8',   name: 'High − 3R/8',         value: rl.H_3r8,    pct: '62.5%',  note: `−${(R*3/8).toFixed(1)} pts`, zone: 'sell' },
+        { key: 'mid',     name: '── MIDPOINT ──',       value: rl.midpoint, pct: '50.0%',  note: 'SELL / BUY',                zone: 'mid'  },
+        { key: 'L_3r8',   name: 'Low + 3R/8',          value: rl.L_3r8,    pct: '37.5%',  note: `+${(R*3/8).toFixed(1)} pts`, zone: 'buy'  },
+        { key: 'L_r4',    name: 'Low + R/4',            value: rl.L_r4,     pct: '25.0%',  note: `+${(R/4).toFixed(1)} pts`,   zone: 'buy'  },
+        { key: 'L_r8',    name: 'Low + R/8',            value: rl.L_r8,     pct: '12.5%',  note: `+${(R/8).toFixed(1)} pts`,   zone: 'buy'  },
+        { key: 'L',       name: 'Low D-1',              value: rl.L,        pct: '0%',     note: isLong ? 'Extremo LONG' : 'Target reversa', zone: 'buy'  },
+        { key: 'L_ext',   name: 'Extensión −25%',       value: rl.L_ext,    pct: '−25%',   note: 'Ext bajista',                zone: 'ext'  },
     ];
 
-    const todayOpen = parseFloat(document.getElementById('todayOpen').value);
     const html = levels.map(l => {
-        const isNearOpen = !isNaN(todayOpen) && Math.abs(l.value - todayOpen) < 5;
-        return `<div class="range-level-row${isNearOpen ? ' current-zone' : ''}">
-            <span class="range-level-name">${l.name}</span>
+        const isNearOpen    = !isNaN(todayOpen) && Math.abs(l.value - todayOpen) < 3;
+        const isNearExtreme = !isNaN(baseEx)    && Math.abs(l.value - baseEx)   < 3;
+        // Objetivo estimado: 25% y 37.5% para LONG; 62.5% y 75% para SHORT
+        const isEstTarget = !result.hasExtremeReal && (
+            (isLong  && (l.key === 'L_3r8' || l.key === 'L_r4')) ||
+            (!isLong && (l.key === 'H_3r8' || l.key === 'H_r4'))
+        );
+
+        const zoneColor = l.zone === 'sell' ? 'color:var(--accent-light)'
+                        : l.zone === 'buy'  ? 'color:var(--green)'
+                        : l.zone === 'mid'  ? 'color:var(--blue);font-weight:700'
+                        : 'color:var(--text-muted)';
+
+        let rowExtra = '';
+        if (isNearOpen)    rowExtra += ' current-zone';
+        if (isNearExtreme) rowExtra += ' current-zone';
+
+        let tag = '';
+        if (isEstTarget)   tag = ' <span style="color:var(--yellow);font-size:0.6rem">← extremo estimado</span>';
+        if (isLong  && l.key === 'H') tag = ' <span style="color:var(--green);font-size:0.6rem">← TP final</span>';
+        if (!isLong && l.key === 'L') tag = ' <span style="color:var(--accent-light);font-size:0.6rem">← TP final</span>';
+
+        return `<div class="range-level-row${rowExtra}">
+            <span class="range-level-name" style="${zoneColor}">${l.name}${tag}</span>
             <span class="range-level-value">${l.value.toFixed(2)}</span>
-            <span class="range-level-pct">${l.note}</span>
+            <span class="range-level-pct">${l.pct}</span>
         </div>`;
     }).join('');
 

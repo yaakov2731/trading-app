@@ -15,12 +15,28 @@ const instruments = {
     'GC':  { multiplier: 100, name: '/GC',  tick: 0.10 }
 };
 
-// Fracciones de rango según metodología de la libreta
-// Derivadas de los niveles reales: 26/143=0.182, 52/143=0.364, 105/143=0.734
+// Fracciones de rango — metodología de octavos (R/8)
+// El rango se divide en 8 partes iguales.
+// Midpoint (R/2) = línea divisoria SELL ZONE (arriba) / BUY ZONE (abajo).
+// El precio tiende a buscar el 25% o 37.5% en la dirección del gap antes de reversar.
+//
+//   High ──────── 100%
+//          R/8      87.5%  (SELL ZONE)
+//          R/4      75.0%  (SELL ZONE)
+//         3R/8      62.5%  (SELL ZONE)
+//   Mid ─────────  50.0%  ← DIVISOR
+//         3R/8      37.5%  (BUY ZONE)  ← objetivo gap pequeño
+//          R/4      25.0%  (BUY ZONE)  ← objetivo gap mediano/grande
+//          R/8      12.5%  (BUY ZONE)
+//   Low ──────── 0%
 const RANGE_FRACTIONS = {
-    f1: 26 / 143,   // ≈ 0.182 (nivel "26" de la libreta)
-    f2: 52 / 143,   // ≈ 0.364 (nivel "52" de la libreta)
-    f3: 105 / 143,  // ≈ 0.734 (nivel "105" de la libreta ≈ 3/4 del rango)
+    f1: 1 / 8,   // 0.125  = R/8
+    f2: 1 / 4,   // 0.250  = R/4
+    f3: 3 / 8,   // 0.375  = 3R/8
+    f4: 1 / 2,   // 0.500  = R/2 (midpoint)
+    f5: 5 / 8,   // 0.625  = 5R/8
+    f6: 3 / 4,   // 0.750  = 3R/4
+    f7: 7 / 8,   // 0.875  = 7R/8
 };
 
 // Entry modes - puntos desde el extremo real
@@ -174,24 +190,25 @@ function calcTrueRange(dayHigh, dayLow, dayOpen, prevClose) {
  * @returns {object} Niveles de rango
  */
 function calcRangeLevels(prevTrueHigh, prevTrueLow, rangeTotal) {
-    const { f1, f2, f3 } = RANGE_FRACTIONS;
-    const midpoint = (prevTrueHigh + prevTrueLow) / 2;
+    const { f1, f2, f3, f4, f5, f6, f7 } = RANGE_FRACTIONS;
+    const midpoint = prevTrueLow + rangeTotal * f4;  // = (H + L) / 2
 
     return {
-        // Desde el True High hacia abajo
-        H:          prevTrueHigh,
-        H_f1:       prevTrueHigh - rangeTotal * f1,   // H - 18.2%R (nivel ~26 pts en R=143)
-        H_f2:       prevTrueHigh - rangeTotal * f2,   // H - 36.4%R (nivel ~52 pts)
-        H_f3:       prevTrueHigh - rangeTotal * f3,   // H - 73.4%R (nivel ~105 pts ≈ 3/4R)
-        midpoint:   midpoint,
-        // Desde el True Low hacia arriba
-        L_f3:       prevTrueLow  + rangeTotal * f3,
-        L_f2:       prevTrueLow  + rangeTotal * f2,
-        L_f1:       prevTrueLow  + rangeTotal * f1,
-        L:          prevTrueLow,
-        // Niveles extendidos (más allá del rango)
-        H_ext:      prevTrueHigh + rangeTotal * f1,   // Extensión alcista
-        L_ext:      prevTrueLow  - rangeTotal * f1,   // Extensión bajista
+        // ── SELL ZONE (arriba del midpoint) ────────────────────────
+        H:       prevTrueHigh,                        // 100% — extremo SHORT
+        H_r8:    prevTrueHigh - rangeTotal * f1,      // 87.5%
+        H_r4:    prevTrueHigh - rangeTotal * f2,      // 75.0%
+        H_3r8:   prevTrueHigh - rangeTotal * f3,      // 62.5%
+        // ── MIDPOINT (línea divisoria) ──────────────────────────────
+        midpoint,                                     // 50.0%
+        // ── BUY ZONE (abajo del midpoint) ──────────────────────────
+        L_3r8:   prevTrueLow  + rangeTotal * f3,      // 37.5% ← target gap pequeño
+        L_r4:    prevTrueLow  + rangeTotal * f2,      // 25.0% ← target gap mediano/grande
+        L_r8:    prevTrueLow  + rangeTotal * f1,      // 12.5%
+        L:       prevTrueLow,                         // 0%   — extremo LONG
+        // ── Extensiones (más allá del rango) ───────────────────────
+        H_ext:   prevTrueHigh + rangeTotal * f2,      // +25%
+        L_ext:   prevTrueLow  - rangeTotal * f2,      // -25%
     };
 }
 
@@ -268,27 +285,25 @@ function computeLevels({
     if (hasExtremeReal) {
         baseExtreme = extremeReal;
     } else {
-        // Estimación mejorada: en gap reversals, el extremo se forma cerca del open.
-        // La extensión más allá del open es típicamente 10-30% del tamaño del gap,
-        // NO un % del rango previo (que sobreestima el movimiento).
+        // Estimación basada en percentiles del rango anterior (metodología de la libreta).
         //
-        // Lógica: el gap en sí ya es el movimiento principal desde el cierre anterior.
-        // El precio rara vez se extiende más de 25-30% adicional del gap desde el open.
+        // Regla: el precio busca el 25% o el 37.5% del rango en la dirección del gap,
+        //        medido desde el extremo opuesto, ANTES de reversar.
         //
-        // extFactor según tamaño del gap:
-        //   Gap pequeño (<0.30%): extensión ~30% del gap (más espacio relativo)
-        //   Gap mediano (0.30-0.70%): extensión ~20% del gap
-        //   Gap grande (>0.70%): extensión ~10% (gaps grandes revierten más rápido)
-        const gapPts = Math.abs(gap);
-        let extFactor;
-        if (gapPct < 0.30) extFactor = 0.30;
-        else if (gapPct < 0.70) extFactor = 0.20;
-        else extFactor = 0.10;
-
-        const extension = gapPts * extFactor;
-        baseExtreme = isGapUp
-            ? todayOpen + extension
-            : todayOpen - extension;
+        // Gap DOWN (LONG) → extremo se forma en la BUY ZONE:
+        //   - Gap pequeño (<0.30%): ~37.5% del rango desde el Low (precio bajó poco)
+        //   - Gap mediano/grande  : ~25.0% del rango desde el Low (ya bajó bastante)
+        //
+        // Gap UP (SHORT) → extremo se forma en la SELL ZONE:
+        //   - Gap pequeño (<0.30%): ~62.5% del rango desde el Low (precio subió poco)
+        //   - Gap mediano/grande  : ~75.0% del rango desde el Low (ya subió bastante)
+        let extremePct;
+        if (isGapUp) {
+            extremePct = gapPct < 0.30 ? RANGE_FRACTIONS.f5 : RANGE_FRACTIONS.f6; // 62.5% o 75%
+        } else {
+            extremePct = gapPct < 0.30 ? RANGE_FRACTIONS.f3 : RANGE_FRACTIONS.f2; // 37.5% o 25%
+        }
+        baseExtreme = prevTrueLow + prevRangeTotal * extremePct;
     }
 
     // --------------------------------------------------------
@@ -413,13 +428,23 @@ function computeLevels({
     const wrDecimal = expectedWR_combined / 100;
     const expectedValue = (wrDecimal * rewardPoints) - ((1 - wrDecimal) * riskPoints);
 
+    // ── ZONA DEL OPEN (BUY o SELL) ───────────────────────────────────────
+    // Determina en qué zona del rango anterior abrió el precio hoy.
+    const openZone    = todayOpen <= rangeLevels.midpoint ? 'BUY' : 'SELL';
+    const openZonePct = prevRangeTotal > 0
+        ? ((todayOpen - prevTrueLow) / prevRangeTotal * 100).toFixed(1)
+        : null;
+
     // Rango de incertidumbre de la estimación (solo relevante cuando !hasExtremeReal)
-    // Banda: desde el open (extremo optimista) hasta open ± 50% del gap (pesimista)
-    const gapPts = Math.abs(gap);
+    // Banda: entre el nivel 25% y el 37.5% (BUY zone) o 62.5% y 75% (SELL zone)
     const estimationBand = hasExtremeReal ? null : {
-        optimistic: isGapUp ? todayOpen : todayOpen,          // extremo = open (mínima extensión)
-        pessimistic: isGapUp ? todayOpen + gapPts * 0.50 : todayOpen - gapPts * 0.50, // máxima extensión
-        note: `Extremo estimado: ~${baseExtreme.toFixed(2)} (rango probable: ±${(gapPts * 0.20).toFixed(1)} pts)`
+        level25:  isGapUp ? (prevTrueLow + prevRangeTotal * RANGE_FRACTIONS.f6) // 75%
+                          : (prevTrueLow + prevRangeTotal * RANGE_FRACTIONS.f2), // 25%
+        level375: isGapUp ? (prevTrueLow + prevRangeTotal * RANGE_FRACTIONS.f5) // 62.5%
+                          : (prevTrueLow + prevRangeTotal * RANGE_FRACTIONS.f3), // 37.5%
+        note: isGapUp
+            ? `Extremo estimado en SELL ZONE: ${(prevTrueLow + prevRangeTotal * RANGE_FRACTIONS.f5).toFixed(2)} – ${(prevTrueLow + prevRangeTotal * RANGE_FRACTIONS.f6).toFixed(2)} (62.5%–75% del rango)`
+            : `Extremo estimado en BUY ZONE: ${(prevTrueLow + prevRangeTotal * RANGE_FRACTIONS.f2).toFixed(2)} – ${(prevTrueLow + prevRangeTotal * RANGE_FRACTIONS.f3).toFixed(2)} (25%–37.5% del rango)`
     };
 
     return {
@@ -436,6 +461,9 @@ function computeLevels({
         baseExtreme,
         hasExtremeReal,
         estimationBand,
+        // Zona del open
+        openZone,
+        openZonePct,
         // Niveles de trading
         entry, sl, tp1, tp2, tp3,
         entryPts, slPts,
