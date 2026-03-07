@@ -828,6 +828,9 @@
                     <div id="wrTag" class="meta-tag wr-tag"><span>WR esperado: --</span></div>
                 </div>
 
+                <!-- EXTREMO: real o estimado -->
+                <div id="extremeInfoPanel" style="display:none; margin-bottom:1rem; padding:0.7rem 1rem; border-radius:8px; border:1px solid; font-size:0.78rem; line-height:1.5;"></div>
+
                 <div class="levels-grid">
                     <div class="level-card entry">
                         <button class="copy-btn" onclick="copyLevel(event,'entryLevel')">Copy</button>
@@ -1301,9 +1304,38 @@ function calculateLevels() {
     document.getElementById('rangeTag').innerHTML = `<span>Rango: ${result.prevRangeTotal.toFixed(1)} pts</span>`;
     document.getElementById('wrTag').innerHTML = `<span>WR esperado: ~${result.expectedWR.toFixed(1)}%</span>`;
 
-    // Entry/SL labels
-    document.getElementById('entryLabel').textContent = `Entry (${result.entryPts} pts del extremo)`;
-    document.getElementById('slLabel').textContent = `Stop Loss (${result.slPts} pts del extremo)`;
+    // Entry/SL labels — indicar si son niveles estimados
+    const estSuffix = result.hasExtremeReal ? '' : ' (est.)';
+    document.getElementById('entryLabel').textContent = `Entry ${result.entryPts} pts del extremo${estSuffix}`;
+    document.getElementById('slLabel').textContent    = `Stop Loss ${result.slPts} pts del extremo${estSuffix}`;
+
+    // Panel de extremo: real vs estimado
+    const extremePanel = document.getElementById('extremeInfoPanel');
+    if (result.hasExtremeReal) {
+        extremePanel.style.display = 'block';
+        extremePanel.style.background = 'rgba(34,197,94,0.08)';
+        extremePanel.style.borderColor = 'rgba(34,197,94,0.35)';
+        extremePanel.style.color = 'var(--green)';
+        extremePanel.innerHTML = `<strong>Extremo REAL confirmado:</strong> ${result.baseExtreme.toFixed(2)} &nbsp;|&nbsp; Niveles calculados con precisión`;
+    } else if (result.estimationBand) {
+        const band = result.estimationBand;
+        const gapPts = Math.abs(result.gap);
+        extremePanel.style.display = 'block';
+        extremePanel.style.background = 'rgba(234,179,8,0.08)';
+        extremePanel.style.borderColor = 'rgba(234,179,8,0.40)';
+        extremePanel.style.color = 'var(--yellow)';
+        extremePanel.innerHTML = `
+            <strong>⚠ Extremo ESTIMADO:</strong> ~${result.baseExtreme.toFixed(2)}&nbsp;&nbsp;
+            <span style="color:var(--text-muted);font-size:0.72rem">
+                Rango probable: ${band.pessimistic.toFixed(2)} → ${band.optimistic.toFixed(2)}
+                &nbsp;(±${(gapPts * 0.20).toFixed(1)} pts de incertidumbre)
+            </span><br>
+            <span style="font-size:0.7rem;color:var(--text-muted)">
+                Los niveles son preliminares. Ingresar el extremo real (H/L primera hora RTH 9:30–10:30) para mayor precisión.
+            </span>`;
+    } else {
+        extremePanel.style.display = 'none';
+    }
 
     // Levels
     document.getElementById('entryLevel').textContent = result.entry.toFixed(2);
@@ -1379,7 +1411,9 @@ function calculateLevels() {
     } else if (result.isGapUp) {
         alertDiv.innerHTML = `<div class="alert alert-warning"><span>⚠️</span><div><strong>Gap UP (SHORT).</strong> WR histórico: 31.7%. Usar modo conservador (8 pts). Confirmar extremo real.</div></div>`;
     } else if (!result.hasExtremeReal) {
-        alertDiv.innerHTML = `<div class="alert alert-warning"><span>⏳</span><div><strong>Esperando Extremo Real.</strong> Monitorear 10:00-10:30 ET. Completar checklist antes de entrar.</div></div>`;
+        const gapPts = Math.abs(result.gap);
+        const bandNote = result.estimationBand ? ` Extremo estimado: ~${result.baseExtreme.toFixed(2)} (incertidumbre ±${(gapPts * 0.20).toFixed(1)} pts).` : '';
+        alertDiv.innerHTML = `<div class="alert alert-warning"><span>⏳</span><div><strong>Esperando Extremo Real.</strong>${bandNote} Monitorear 9:30–10:30 ET. Niveles actuales son preliminares.</div></div>`;
     } else {
         const wrDisplay = (fa && fa.bestFilterWR) ? fa.bestFilterWR.toFixed(1) : result.expectedWR.toFixed(1);
         const qualLabel = (fa && fa.qualityScore >= 4) ? ' ★★★ SETUP PREMIUM' : (fa && fa.qualityScore >= 3) ? ' ★★ SETUP BUENO' : '';

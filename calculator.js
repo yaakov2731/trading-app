@@ -268,12 +268,27 @@ function computeLevels({
     if (hasExtremeReal) {
         baseExtreme = extremeReal;
     } else {
-        // Estimación: el extremo se forma dentro del rango esperado
-        // Usamos el rango total del día anterior como referencia
-        const gapMove = prevRangeTotal * params.gapMoveEstimate;
+        // Estimación mejorada: en gap reversals, el extremo se forma cerca del open.
+        // La extensión más allá del open es típicamente 10-30% del tamaño del gap,
+        // NO un % del rango previo (que sobreestima el movimiento).
+        //
+        // Lógica: el gap en sí ya es el movimiento principal desde el cierre anterior.
+        // El precio rara vez se extiende más de 25-30% adicional del gap desde el open.
+        //
+        // extFactor según tamaño del gap:
+        //   Gap pequeño (<0.30%): extensión ~30% del gap (más espacio relativo)
+        //   Gap mediano (0.30-0.70%): extensión ~20% del gap
+        //   Gap grande (>0.70%): extensión ~10% (gaps grandes revierten más rápido)
+        const gapPts = Math.abs(gap);
+        let extFactor;
+        if (gapPct < 0.30) extFactor = 0.30;
+        else if (gapPct < 0.70) extFactor = 0.20;
+        else extFactor = 0.10;
+
+        const extension = gapPts * extFactor;
         baseExtreme = isGapUp
-            ? todayOpen + gapMove
-            : todayOpen - gapMove;
+            ? todayOpen + extension
+            : todayOpen - extension;
     }
 
     // --------------------------------------------------------
@@ -398,6 +413,15 @@ function computeLevels({
     const wrDecimal = expectedWR_combined / 100;
     const expectedValue = (wrDecimal * rewardPoints) - ((1 - wrDecimal) * riskPoints);
 
+    // Rango de incertidumbre de la estimación (solo relevante cuando !hasExtremeReal)
+    // Banda: desde el open (extremo optimista) hasta open ± 50% del gap (pesimista)
+    const gapPts = Math.abs(gap);
+    const estimationBand = hasExtremeReal ? null : {
+        optimistic: isGapUp ? todayOpen : todayOpen,          // extremo = open (mínima extensión)
+        pessimistic: isGapUp ? todayOpen + gapPts * 0.50 : todayOpen - gapPts * 0.50, // máxima extensión
+        note: `Extremo estimado: ~${baseExtreme.toFixed(2)} (rango probable: ±${(gapPts * 0.20).toFixed(1)} pts)`
+    };
+
     return {
         // Rango
         prevRangeTotal,
@@ -411,6 +435,7 @@ function computeLevels({
         // Extremo
         baseExtreme,
         hasExtremeReal,
+        estimationBand,
         // Niveles de trading
         entry, sl, tp1, tp2, tp3,
         entryPts, slPts,
