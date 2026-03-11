@@ -1085,6 +1085,50 @@ describe('computeLevels – dynamic TPs', () => {
 });
 
 // ──────────────────────────────────────────────
+// Extreme-adaptive execution mode
+// ──────────────────────────────────────────────
+describe('computeLevels – extreme-adaptive execution', () => {
+    test('when optimizeToExtremes=true, entry gets closer to the extreme', () => {
+        const classic = computeLevels(inputs({
+            todayOpen: 6065,
+            prevClose: 6080,
+            extremeReal: 6045,
+            entryModeKey: 'standard',
+            optimizeToExtremes: false,
+        }));
+        const adaptive = computeLevels(inputs({
+            todayOpen: 6065,
+            prevClose: 6080,
+            extremeReal: 6045,
+            entryModeKey: 'standard',
+            optimizeToExtremes: true,
+        }));
+
+        const distClassic = Math.abs(classic.entry - classic.baseExtreme);
+        const distAdaptive = Math.abs(adaptive.entry - adaptive.baseExtreme);
+
+        expect(adaptive.executionMode).toBe('EXTREME_ADAPTIVE');
+        expect(distAdaptive).toBeLessThanOrEqual(distClassic);
+    });
+
+    test('adaptive mode keeps TP order and valid WR execution range', () => {
+        const r = computeLevels(inputs({
+            todayOpen: 6095, // gap up
+            prevClose: 6080,
+            extremeReal: 6115,
+            entryModeKey: 'aggressive',
+            optimizeToExtremes: true,
+        }));
+
+        expect(r.direction).toBe('SHORT');
+        expect(r.tp1).toBeGreaterThan(r.tp2);
+        expect(r.tp2).toBeGreaterThan(r.tp3);
+        expect(r.expectedWR_execution).toBeGreaterThanOrEqual(10);
+        expect(r.expectedWR_execution).toBeLessThanOrEqual(88);
+    });
+});
+
+// ──────────────────────────────────────────────
 // Expected Value (EV)
 // ──────────────────────────────────────────────
 describe('computeLevels – expectedValue', () => {

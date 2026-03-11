@@ -140,6 +140,95 @@ const BACKTEST_STATS = {
     ]
 };
 
+function clamp(value, min, max) {
+    return Math.max(min, Math.min(max, value));
+}
+
+/**
+ * Ajusta entry/SL/TP para acercar la ejecución al comportamiento histórico real
+ * cerca del extremo (MFE/MAE observados en 10 años).
+ */
+function optimizeExecutionToExtremes({
+    direction,
+    prevRangeTotal,
+    baseExtreme,
+    hasExtremeReal,
+    entryMode,
+    filterAnalysis,
+    setupScore
+}) {
+    const hist = BACKTEST_STATS.extremeMovement;
+    const qualityScore = filterAnalysis?.qualityScore ?? 0;
+
+    // Entry más cercano al extremo según régimen de rango y calidad del setup.
+    const rangeEntryBase =
+        prevRangeTotal < 25 ? 3.5 :
+        prevRangeTotal < 40 ? 4.0 :
+        prevRangeTotal < 60 ? 4.8 :
+        prevRangeTotal < 100 ? 5.6 : 6.2;
+    const qualityAdj = qualityScore >= 4 ? -0.4 : qualityScore >= 3 ? -0.2 : qualityScore >= 2 ? 0.2 : 0.6;
+    const uncertaintyAdj = hasExtremeReal ? 0 : 0.5;
+    const setupAdj = setupScore >= 70 ? -0.2 : setupScore < 30 ? 0.4 : 0;
+    let entryFromExtremePts = clamp(
+        rangeEntryBase + qualityAdj + uncertaintyAdj + setupAdj,
+        3.0,
+        Math.max(3.0, entryMode.entry)
+    );
+    // Nunca alejar más la entrada que el modo elegido por el usuario.
+    entryFromExtremePts = Math.min(entryFromExtremePts, entryMode.entry);
+
+    // Stop desde entry calibrado con MAE histórico (p75/p90).
+    let stopFromEntryPts = qualityScore >= 4 ? 3.0 : qualityScore >= 3 ? 3.8 : qualityScore >= 2 ? 4.8 : 5.8;
+    if (prevRangeTotal >= 60) stopFromEntryPts += 0.7;
+    if (prevRangeTotal >= 100) stopFromEntryPts += 0.5;
+    stopFromEntryPts = clamp(stopFromEntryPts, 2.5, Math.max(4.5, hist.mae.p90));
+
+    // TP2 desde extremo limitado por MFE/distancia real al cierre observada.
+    let tp2FromExtremePts;
+    if (qualityScore >= 4) tp2FromExtremePts = Math.min(prevRangeTotal * 0.76, hist.mfe.p75);
+    else if (qualityScore >= 3) tp2FromExtremePts = Math.min(prevRangeTotal * 0.68, hist.mfe.p50);
+    else if (qualityScore >= 2) tp2FromExtremePts = Math.min(prevRangeTotal * 0.58, hist.distToClose.p75);
+    else tp2FromExtremePts = Math.min(prevRangeTotal * 0.48, hist.distToClose.median);
+
+    // Mantener R:R mínimo razonable aun con targets más realistas.
+    const minTp2FromExtreme = entryFromExtremePts + stopFromEntryPts * 1.35;
+    tp2FromExtremePts = Math.max(tp2FromExtremePts, minTp2FromExtreme);
+
+    let tp1FromExtremePts = Math.max(entryFromExtremePts + stopFromEntryPts * 0.85, tp2FromExtremePts * 0.62);
+    let tp3FromExtremePts = Math.max(tp2FromExtremePts + 1.0, tp2FromExtremePts * 1.22);
+    const tp3Cap = qualityScore >= 3 ? hist.mfe.p90 : hist.distToClose.p90;
+    tp3FromExtremePts = Math.min(tp3FromExtremePts, tp3Cap);
+    if (tp3FromExtremePts <= tp2FromExtremePts) tp3FromExtremePts = tp2FromExtremePts + 1.0;
+
+    let entry, sl, tp1, tp2, tp3;
+    if (direction === 'SHORT') {
+        entry = baseExtreme - entryFromExtremePts;
+        sl = entry + stopFromEntryPts;
+        tp1 = baseExtreme - tp1FromExtremePts;
+        tp2 = baseExtreme - tp2FromExtremePts;
+        tp3 = baseExtreme - tp3FromExtremePts;
+    } else {
+        entry = baseExtreme + entryFromExtremePts;
+        sl = entry - stopFromEntryPts;
+        tp1 = baseExtreme + tp1FromExtremePts;
+        tp2 = baseExtreme + tp2FromExtremePts;
+        tp3 = baseExtreme + tp3FromExtremePts;
+    }
+
+    return {
+        entry,
+        sl,
+        tp1,
+        tp2,
+        tp3,
+        entryFromExtremePts,
+        stopFromEntryPts,
+        tp1FromExtremePts,
+        tp2FromExtremePts,
+        tp3FromExtremePts,
+    };
+}
+
 /**
  * Calcula el rango TOTAL del día (incluyendo el gap).
  * 
@@ -210,7 +299,9 @@ function computeLevels({
     prevHigh, prevLow, prevClose, prevOpen, prevPrevClose,
     todayOpen, extremeReal, entryModeKey, instrumentKey,
     // Parámetros para filtros avanzados (opcionales)
-    atr5, atr20, dow
+    atr5, atr20, dow,
+    // Ajuste opcional: calibrar entradas/salidas al comportamiento histórico en extremos
+    optimizeToExtremes = false
 }) {
     // Validaciones
     if (isNaN(prevHigh) || isNaN(prevLow) || isNaN(prevClose) || isNaN(todayOpen)) {
@@ -326,12 +417,6 @@ function computeLevels({
         tp3   = baseExtreme + (prevRangeTotal * tp3Pct);
     }
 
-    const riskPoints   = Math.abs(entry - sl);
-    const rewardPoints = Math.abs(tp2 - entry);
-    const rrRatio      = riskPoints === 0 ? Infinity : rewardPoints / riskPoints;
-    const riskDollars  = riskPoints * instrument.multiplier;
-    const rewardDollars= rewardPoints * instrument.multiplier;
-
     // --------------------------------------------------------
     // 6. FILTROS
     // --------------------------------------------------------
@@ -394,11 +479,57 @@ function computeLevels({
     });
     const setupScoreInfo = setupScoreLabel(setupScore);
 
+    // Ajuste de ejecución "pegado al extremo" usando datos históricos (MFE/MAE).
+    let executionMode = 'CLASSIC';
+    let executionProfile = null;
+    let effectiveEntryPts = entryPts;
+    if (optimizeToExtremes) {
+        executionProfile = optimizeExecutionToExtremes({
+            direction,
+            prevRangeTotal,
+            baseExtreme,
+            hasExtremeReal,
+            entryMode,
+            filterAnalysis,
+            setupScore,
+        });
+        if (executionProfile) {
+            entry = executionProfile.entry;
+            sl = executionProfile.sl;
+            tp1 = executionProfile.tp1;
+            tp2 = executionProfile.tp2;
+            tp3 = executionProfile.tp3;
+            effectiveEntryPts = executionProfile.entryFromExtremePts;
+            executionMode = 'EXTREME_ADAPTIVE';
+        }
+    }
+
+    const riskPoints = Math.abs(entry - sl);
+    const rewardPoints = Math.abs(tp2 - entry);
+    const rrRatio = riskPoints === 0 ? Infinity : rewardPoints / riskPoints;
+    const riskDollars = riskPoints * instrument.multiplier;
+    const rewardDollars = rewardPoints * instrument.multiplier;
+
+    // Ajuste estimado del WR por ejecución más cercana al extremo.
+    let expectedWR_execution = expectedWR_combined;
+    if (executionMode === 'EXTREME_ADAPTIVE') {
+        const baseExecutionWR = Math.max(expectedWR_combined, filteredWR || 0);
+        const entryTightBonus = Math.max(0, entryPts - effectiveEntryPts) * 1.2;
+        const qualityBonus = (filterAnalysis?.qualityScore || 0) * 0.8;
+        const riskControlBonus = riskPoints <= BACKTEST_STATS.extremeMovement.mae.p75 ? 1.5 : -1.0;
+        const noExtremePenalty = hasExtremeReal ? 0 : -1.5;
+        expectedWR_execution = clamp(
+            baseExecutionWR + entryTightBonus + qualityBonus + riskControlBonus + noExtremePenalty,
+            10,
+            88
+        );
+    }
+
     // Expected Value (EV) en puntos:
     // EV = WR × rewardPoints - (1-WR) × riskPoints
     // Si EV > 0 → expectativa positiva (vale la pena operar)
     // Si EV < 0 → expectativa negativa (no operar aunque el setup parezca válido)
-    const wrDecimal = expectedWR_combined / 100;
+    const wrDecimal = expectedWR_execution / 100;
     const expectedValue = (wrDecimal * rewardPoints) - ((1 - wrDecimal) * riskPoints);
 
     return {
@@ -417,6 +548,11 @@ function computeLevels({
         // Niveles de trading
         entry, sl, tp1, tp2, tp3,
         entryPts, slPts,
+        effectiveEntryPts,
+        effectiveStopPts: riskPoints,
+        executionMode,
+        executionProfile,
+        optimizeToExtremes,
         // Risk/Reward
         riskPoints, rewardPoints, rrRatio,
         riskDollars, rewardDollars,
@@ -429,6 +565,7 @@ function computeLevels({
         expectedWR,
         expectedWR_range,
         expectedWR_combined,
+        expectedWR_execution,
         filteredWR,
         // Setup Score y Expected Value
         setupScore,
@@ -698,5 +835,6 @@ if (typeof module !== 'undefined' && module.exports) {
         calcTrueRange, calcRangeLevels, computeLevels, computeFilters,
         computeAdvancedFilters, computeSetupScore, setupScoreLabel,
         suggestEntryMode, getFilterStatusClass, getFilterIcon,
+        optimizeExecutionToExtremes,
     };
 }

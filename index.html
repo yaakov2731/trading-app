@@ -800,14 +800,24 @@
                     </div>
                 </div>
 
+                <div style="margin-top:0.75rem;padding:0.75rem;background:var(--bg-secondary);border:1px solid var(--border-light);border-radius:8px;">
+                    <label for="optimizeToExtremes" style="display:flex;align-items:flex-start;gap:0.6rem;cursor:pointer;text-transform:none;letter-spacing:0;font-size:0.78rem;color:var(--text-secondary);">
+                        <input type="checkbox" id="optimizeToExtremes" checked style="margin-top:0.2rem;accent-color:var(--green);width:16px;height:16px;">
+                        <span>
+                            <strong style="color:var(--green);font-size:0.8rem;">Ajuste histórico de ejecución (recomendado)</strong><br>
+                            Entry/SL/TP se calibran con MAE/MFE real en extremos para acercar las salidas al rango alcanzable.
+                        </span>
+                    </label>
+                </div>
+
                 <button class="btn btn-primary" onclick="calculateLevels()">
                     Calcular Niveles →
                 </button>
 
                 <div class="formula-box">
                     <code>Rango Total = max(High, Open) − min(Low, Close_anterior)</code>
-                    <code>TPs = Extremo ± (Rango_Total_D-1 × 50% / 75% / 90%)</code>
-                    <span class="note">El GAP es parte del rango del día. El rango total del día anterior determina los niveles de hoy.</span>
+                    <code>Ejecución adaptativa = Entry/SL/TP calibrados con MAE/MFE histórico en extremos</code>
+                    <span class="note">El GAP es parte del rango del día. El ajuste histórico mantiene el plan cerca del extremo y evita targets fuera del rango alcanzable.</span>
                 </div>
             </div>
 
@@ -1264,6 +1274,7 @@ function calculateLevels() {
     const atr20Val     = parseFloat(document.getElementById('atr20').value);
     const dowVal       = document.getElementById('dowSelect').value;
     const dowInt       = dowVal !== '' ? parseInt(dowVal) : null;
+    const optimizeToExtremes = document.getElementById('optimizeToExtremes').checked;
 
     if (isNaN(prevHigh) || isNaN(prevLow) || isNaN(prevClose) || isNaN(todayOpen)) {
         alert('Completar: High D-1, Low D-1, Close D-1 y Open Hoy (mínimo requerido)');
@@ -1277,7 +1288,8 @@ function calculateLevels() {
     const result = computeLevels({
         prevHigh, prevLow, prevClose, prevOpen, prevPrevClose,
         todayOpen, extremeReal, entryModeKey, instrumentKey,
-        atr5: atr5Val, atr20: atr20Val, dow: dowInt
+        atr5: atr5Val, atr20: atr20Val, dow: dowInt,
+        optimizeToExtremes
     });
 
     if (!result) {
@@ -1305,11 +1317,16 @@ function calculateLevels() {
     const gapSign = result.gap >= 0 ? '+' : '';
     document.getElementById('gapTag').innerHTML = `<span>Gap: ${gapSign}${result.gap.toFixed(2)} (${gapSign}${result.gapPct.toFixed(2)}%)</span>`;
     document.getElementById('rangeTag').innerHTML = `<span>Rango: ${result.prevRangeTotal.toFixed(1)} pts</span>`;
-    document.getElementById('wrTag').innerHTML = `<span>WR esperado: ~${result.expectedWR.toFixed(1)}%</span>`;
+    document.getElementById('wrTag').innerHTML = `<span>WR estimado: ~${result.expectedWR_execution.toFixed(1)}%</span>`;
 
     // Entry/SL labels
-    document.getElementById('entryLabel').textContent = `Entry (${result.entryPts} pts del extremo)`;
-    document.getElementById('slLabel').textContent = `Stop Loss (${result.slPts} pts del extremo)`;
+    if (result.executionMode === 'EXTREME_ADAPTIVE') {
+        document.getElementById('entryLabel').textContent = `Entry (${result.entryPts} pts modo | ajustado ${result.effectiveEntryPts.toFixed(1)} pts)`;
+        document.getElementById('slLabel').textContent = `Stop Loss (${result.effectiveStopPts.toFixed(1)} pts desde entry)`;
+    } else {
+        document.getElementById('entryLabel').textContent = `Entry (${result.entryPts} pts del extremo)`;
+        document.getElementById('slLabel').textContent = `Stop Loss (${result.slPts} pts del extremo)`;
+    }
 
     // Levels
     document.getElementById('entryLevel').textContent = result.entry.toFixed(2);
@@ -1349,9 +1366,9 @@ function calculateLevels() {
         // WR esperado con filtros
         const wrEl = document.getElementById('setupQualityWR');
         if (fa.bestFilterWR) {
-            wrEl.innerHTML = `WR esperado con filtros: <strong style="color:var(--green);font-size:1.1em">${fa.bestFilterWR.toFixed(1)}%</strong> | PF: <strong>${fa.bestFilterPF.toFixed(2)}</strong> (vs baseline 36.1%)`;
+            wrEl.innerHTML = `WR histórico con filtros: <strong style="color:var(--green);font-size:1.1em">${fa.bestFilterWR.toFixed(1)}%</strong> | WR ejecución: <strong>${result.expectedWR_execution.toFixed(1)}%</strong> | PF: <strong>${fa.bestFilterPF.toFixed(2)}</strong>`;
         } else {
-            wrEl.textContent = 'WR esperado: ' + result.expectedWR.toFixed(1) + '%';
+            wrEl.textContent = 'WR estimado ejecución: ' + result.expectedWR_execution.toFixed(1) + '%';
         }
 
         // Filtros activos
@@ -1373,7 +1390,7 @@ function calculateLevels() {
         }
 
         // Actualizar el WR tag en el header de resultados
-        document.getElementById('wrTag').innerHTML = `<span>WR con filtros: ~${fa.bestFilterWR ? fa.bestFilterWR.toFixed(1) : result.expectedWR.toFixed(1)}%</span>`;
+        document.getElementById('wrTag').innerHTML = `<span>WR ejecución: ~${result.expectedWR_execution.toFixed(1)}%</span>`;
     } else {
         qualityPanel.style.display = 'none';
     }
@@ -1387,7 +1404,7 @@ function calculateLevels() {
     } else if (!result.hasExtremeReal) {
         alertDiv.innerHTML = `<div class="alert alert-warning"><span>⏳</span><div><strong>Esperando Extremo Real.</strong> Monitorear 10:00-10:30 ET. Completar checklist antes de entrar.</div></div>`;
     } else {
-        const wrDisplay = (fa && fa.bestFilterWR) ? fa.bestFilterWR.toFixed(1) : result.expectedWR.toFixed(1);
+        const wrDisplay = result.expectedWR_execution.toFixed(1);
         const qualLabel = (fa && fa.qualityScore >= 4) ? ' ★★★ SETUP PREMIUM' : (fa && fa.qualityScore >= 3) ? ' ★★ SETUP BUENO' : '';
         alertDiv.innerHTML = `<div class="alert alert-success"><span>✅</span><div><strong>Setup válido${qualLabel}.</strong> Gap DOWN + Extremo Real definido. WR esperado: ~${wrDisplay}%. Verificar 3/4 checklist.</div></div>`;
     }
@@ -1453,6 +1470,7 @@ function copyLevel(event, elementId) {
 
 function resetForm() {
     document.querySelectorAll('input[type="number"]').forEach(i => i.value = '');
+    document.getElementById('optimizeToExtremes').checked = true;
     document.getElementById('resultsSection').classList.remove('visible');
     document.querySelectorAll('.checklist-item').forEach(i => {
         i.classList.remove('checked');

@@ -52,6 +52,12 @@ describe('DOM structure', () => {
         expect(document.getElementById('instrument')).not.toBeNull();
     });
 
+    test('optimize checkbox exists and is enabled by default', () => {
+        const cb = document.getElementById('optimizeToExtremes');
+        expect(cb).not.toBeNull();
+        expect(cb.checked).toBe(true);
+    });
+
     test('instrument select includes GC option', () => {
         const options = [...document.getElementById('instrument').options].map(o => o.value);
         expect(options).toEqual(expect.arrayContaining(['GC']));
