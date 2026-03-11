@@ -113,6 +113,10 @@ describe('computeLevels – input validation', () => {
         expect(computeLevels(inputs({ prevHigh: NaN, prevLow: NaN, prevClose: NaN, todayOpen: NaN }))).toBeNull();
     });
 
+    test('returns null when prevHigh is less than prevLow', () => {
+        expect(computeLevels(inputs({ prevHigh: 6000, prevLow: 6100 }))).toBeNull();
+    });
+
     test('returns null for invalid instrumentKey', () => {
         expect(computeLevels(inputs({ instrumentKey: 'INVALID' }))).toBeNull();
     });

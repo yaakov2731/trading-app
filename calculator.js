@@ -216,6 +216,9 @@ function computeLevels({
     if (isNaN(prevHigh) || isNaN(prevLow) || isNaN(prevClose) || isNaN(todayOpen)) {
         return null;
     }
+    if (prevHigh < prevLow) {
+        return null;
+    }
 
     const instrument = instruments[instrumentKey];
     const entryMode = entryModes[entryModeKey];

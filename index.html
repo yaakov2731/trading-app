@@ -677,9 +677,9 @@
 
     <!-- TABS -->
     <div class="tabs">
-        <button class="tab-btn active" onclick="showTab('calculator')">📊 Calculadora</button>
-        <button class="tab-btn" onclick="showTab('backtest')">📈 Backtest Real</button>
-        <button class="tab-btn" onclick="showTab('methodology')">📋 Metodología</button>
+        <button class="tab-btn active" data-tab="calculator" onclick="showTab('calculator', event)">📊 Calculadora</button>
+        <button class="tab-btn" data-tab="backtest" onclick="showTab('backtest', event)">📈 Backtest Real</button>
+        <button class="tab-btn" data-tab="methodology" onclick="showTab('methodology', event)">📋 Metodología</button>
     </div>
 
     <!-- TAB: CALCULADORA -->
@@ -757,6 +757,7 @@
                             <option value="NQ">/NQ — E-mini Nasdaq ($20/pt)</option>
                             <option value="MNQ">/MNQ — Micro Nasdaq ($2/pt)</option>
                             <option value="RTY">/RTY — Russell 2000 ($50/pt)</option>
+                            <option value="GC">/GC — Gold Futures ($100/pt)</option>
                         </select>
                     </div>
                 </div>
@@ -1238,11 +1239,12 @@
 // UI LOGIC
 // ============================================================
 
-function showTab(tabName) {
+function showTab(tabName, evt) {
     document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.getElementById('tab-' + tabName).classList.add('active');
-    event.target.classList.add('active');
+    const activeButton = evt?.currentTarget || evt?.target || document.querySelector(`.tab-btn[data-tab="${tabName}"]`);
+    if (activeButton) activeButton.classList.add('active');
 
     if (tabName === 'backtest') renderBacktestTab();
 }
@@ -1265,6 +1267,10 @@ function calculateLevels() {
 
     if (isNaN(prevHigh) || isNaN(prevLow) || isNaN(prevClose) || isNaN(todayOpen)) {
         alert('Completar: High D-1, Low D-1, Close D-1 y Open Hoy (mínimo requerido)');
+        return;
+    }
+    if (prevHigh < prevLow) {
+        alert('Datos inválidos: High D-1 no puede ser menor que Low D-1.');
         return;
     }
 

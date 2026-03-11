@@ -52,6 +52,11 @@ describe('DOM structure', () => {
         expect(document.getElementById('instrument')).not.toBeNull();
     });
 
+    test('instrument select includes GC option', () => {
+        const options = [...document.getElementById('instrument').options].map(o => o.value);
+        expect(options).toEqual(expect.arrayContaining(['GC']));
+    });
+
     test('results section exists and is initially hidden', () => {
         const results = document.getElementById('resultsSection');
         expect(results).not.toBeNull();
@@ -202,6 +207,13 @@ describe('calculateLevels – UI integration', () => {
         expect(window.alert).toHaveBeenCalledWith(expect.stringContaining('Completar'));
     });
 
+    test('alerts user when High D-1 is lower than Low D-1', () => {
+        window.alert = jest.fn();
+        fillInputs({ prevHigh: '6040', prevLow: '6050' });
+        calculateLevels();
+        expect(window.alert).toHaveBeenCalledWith(expect.stringContaining('High D-1'));
+    });
+
     test('gap meta tag shows gap value', () => {
         fillInputs();
         calculateLevels();
@@ -245,6 +257,18 @@ describe('calculateLevels – UI integration', () => {
         const esVal = parseFloat(esProfit.replace('$', ''));
         const mesVal = parseFloat(mesProfit.replace('$', ''));
         expect(Math.abs(esVal - mesVal * 10)).toBeLessThanOrEqual(5);
+    });
+});
+
+// ──────────────────────────────────────────────
+// showTab behavior
+// ──────────────────────────────────────────────
+describe('showTab', () => {
+    test('works without event object (programmatic call)', () => {
+        showTab('backtest');
+        expect(document.getElementById('tab-backtest').classList.contains('active')).toBe(true);
+        const backtestBtn = document.querySelector('.tab-btn[data-tab="backtest"]');
+        expect(backtestBtn.classList.contains('active')).toBe(true);
     });
 });
 
