@@ -1,0 +1,23 @@
+{
+  "symbol": "ES=F",
+  "start": "2010-01-01",
+  "end": "2026-03-12",
+  "sampleSize": 3740,
+  "quarterPct": 0.25,
+  "up": {
+    "n": 1865,
+    "meanReversionHitPct": 67.02412868632707,
+    "continuationHitPct": 70.3485254691689,
+    "onlyMeanReversionPct": 26.916890080428956,
+    "onlyContinuationPct": 30.241286863270776,
+    "ambiguousPct": 40.10723860589812
+  },
+  "down": {
+    "n": 1875,
+    "meanReversionHitPct": 72.26666666666667,
+    "continuationHitPct": 66.24,
+    "onlyMeanReversionPct": 31.04,
+    "onlyContinuationPct": 25.013333333333332,
+    "ambiguousPct": 41.22666666666667
+  }
+}

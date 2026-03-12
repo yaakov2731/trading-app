@@ -74,6 +74,7 @@ describe('DOM structure', () => {
             'entryLevel', 'slLevel', 'tp1Level', 'tp2Level', 'tp3Level',
             'slPoints', 'potentialProfit', 'riskAmount',
             'rrRatio', 'directionBadge', 'gapTag', 'rangeTag', 'wrTag',
+            'gap25Tag',
             'filterGap', 'filterRange', 'filterGapType', 'filterExtreme',
             'filterAlert', 'checklistCounter'
         ];

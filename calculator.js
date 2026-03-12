@@ -140,8 +140,57 @@ const BACKTEST_STATS = {
     ]
 };
 
+// Backtest real de patrón GAP ± 25% del rango previo (ES=F, diario, 2010-01-01..2026-03-11)
+// Fuente reproducible en scripts/backtest_gap25.py
+const GAP25_BACKTEST = {
+    source: 'Yahoo Finance ES=F daily (2010-01-01..2026-03-11)',
+    sampleSize: 3740,
+    quarterPct: 0.25,
+    up: {
+        n: 1865,
+        meanReversionHitPct: 67.02,
+        continuationHitPct: 70.35,
+        onlyMeanReversionPct: 26.92,
+        onlyContinuationPct: 30.24,
+        ambiguousPct: 40.11,
+    },
+    down: {
+        n: 1875,
+        meanReversionHitPct: 72.27,
+        continuationHitPct: 66.24,
+        onlyMeanReversionPct: 31.04,
+        onlyContinuationPct: 25.01,
+        ambiguousPct: 41.23,
+    },
+};
+
 function clamp(value, min, max) {
     return Math.max(min, Math.min(max, value));
+}
+
+function computeGap25Pattern({ isGapUp, prevRangeTotal, baseExtreme, direction }) {
+    const stats = isGapUp ? GAP25_BACKTEST.up : GAP25_BACKTEST.down;
+    const quarterMovePts = prevRangeTotal * GAP25_BACKTEST.quarterPct;
+    const meanReversionTarget = direction === 'SHORT'
+        ? baseExtreme - quarterMovePts
+        : baseExtreme + quarterMovePts;
+    const continuationTarget = direction === 'SHORT'
+        ? baseExtreme + quarterMovePts
+        : baseExtreme - quarterMovePts;
+    const edgePct = stats.onlyMeanReversionPct - stats.onlyContinuationPct;
+
+    return {
+        quarterPct: GAP25_BACKTEST.quarterPct,
+        quarterMovePts,
+        meanReversionTarget,
+        continuationTarget,
+        meanReversionHitPct: stats.meanReversionHitPct,
+        continuationHitPct: stats.continuationHitPct,
+        onlyMeanReversionPct: stats.onlyMeanReversionPct,
+        onlyContinuationPct: stats.onlyContinuationPct,
+        ambiguousPct: stats.ambiguousPct,
+        edgePct,
+    };
 }
 
 /**
@@ -155,10 +204,12 @@ function optimizeExecutionToExtremes({
     hasExtremeReal,
     entryMode,
     filterAnalysis,
-    setupScore
+    setupScore,
+    gap25Pattern
 }) {
     const hist = BACKTEST_STATS.extremeMovement;
     const qualityScore = filterAnalysis?.qualityScore ?? 0;
+    const quarterMovePts = gap25Pattern?.quarterMovePts ?? (prevRangeTotal * 0.25);
 
     // Entry más cercano al extremo según régimen de rango y calidad del setup.
     const rangeEntryBase =
@@ -176,6 +227,8 @@ function optimizeExecutionToExtremes({
     );
     // Nunca alejar más la entrada que el modo elegido por el usuario.
     entryFromExtremePts = Math.min(entryFromExtremePts, entryMode.entry);
+    // Acercar la entrada al extremo respecto al objetivo natural de 25% de rango.
+    entryFromExtremePts = Math.min(entryFromExtremePts, Math.max(2.75, quarterMovePts * 0.55));
 
     // Stop desde entry calibrado con MAE histórico (p75/p90).
     let stopFromEntryPts = qualityScore >= 4 ? 3.0 : qualityScore >= 3 ? 3.8 : qualityScore >= 2 ? 4.8 : 5.8;
@@ -194,7 +247,9 @@ function optimizeExecutionToExtremes({
     const minTp2FromExtreme = entryFromExtremePts + stopFromEntryPts * 1.35;
     tp2FromExtremePts = Math.max(tp2FromExtremePts, minTp2FromExtreme);
 
-    let tp1FromExtremePts = Math.max(entryFromExtremePts + stopFromEntryPts * 0.85, tp2FromExtremePts * 0.62);
+    // TP1 prioriza la hipótesis del 25% del rango previo.
+    let tp1FromExtremePts = Math.max(quarterMovePts, entryFromExtremePts + stopFromEntryPts * 0.75);
+    tp2FromExtremePts = Math.max(tp2FromExtremePts, quarterMovePts * 1.55);
     let tp3FromExtremePts = Math.max(tp2FromExtremePts + 1.0, tp2FromExtremePts * 1.22);
     const tp3Cap = qualityScore >= 3 ? hist.mfe.p90 : hist.distToClose.p90;
     tp3FromExtremePts = Math.min(tp3FromExtremePts, tp3Cap);
@@ -226,6 +281,7 @@ function optimizeExecutionToExtremes({
         tp1FromExtremePts,
         tp2FromExtremePts,
         tp3FromExtremePts,
+        quarterMovePts,
     };
 }
 
@@ -369,6 +425,7 @@ function computeLevels({
             ? todayOpen + gapMove
             : todayOpen - gapMove;
     }
+    const gap25Pattern = computeGap25Pattern({ isGapUp, prevRangeTotal, baseExtreme, direction });
 
     // --------------------------------------------------------
     // 5. ENTRY, SL, TPs DINÁMICOS
@@ -492,6 +549,7 @@ function computeLevels({
             entryMode,
             filterAnalysis,
             setupScore,
+            gap25Pattern,
         });
         if (executionProfile) {
             entry = executionProfile.entry;
@@ -517,9 +575,10 @@ function computeLevels({
         const entryTightBonus = Math.max(0, entryPts - effectiveEntryPts) * 1.2;
         const qualityBonus = (filterAnalysis?.qualityScore || 0) * 0.8;
         const riskControlBonus = riskPoints <= BACKTEST_STATS.extremeMovement.mae.p75 ? 1.5 : -1.0;
+        const gap25EdgeBonus = gap25Pattern.edgePct / 8; // edge positivo favorece reversión al 25%
         const noExtremePenalty = hasExtremeReal ? 0 : -1.5;
         expectedWR_execution = clamp(
-            baseExecutionWR + entryTightBonus + qualityBonus + riskControlBonus + noExtremePenalty,
+            baseExecutionWR + entryTightBonus + qualityBonus + riskControlBonus + gap25EdgeBonus + noExtremePenalty,
             10,
             88
         );
@@ -561,6 +620,7 @@ function computeLevels({
         // Filtros
         filters,
         filterAnalysis,
+        gap25Pattern,
         // Win rate esperado
         expectedWR,
         expectedWR_range,
@@ -832,9 +892,10 @@ function getFilterIcon(status) {
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
         instruments, entryModes, params, RANGE_FRACTIONS, BACKTEST_STATS,
+        GAP25_BACKTEST,
         calcTrueRange, calcRangeLevels, computeLevels, computeFilters,
         computeAdvancedFilters, computeSetupScore, setupScoreLabel,
         suggestEntryMode, getFilterStatusClass, getFilterIcon,
-        optimizeExecutionToExtremes,
+        optimizeExecutionToExtremes, computeGap25Pattern,
     };
 }

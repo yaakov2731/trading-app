@@ -836,6 +836,7 @@
                 <div class="meta-info">
                     <div id="gapTag" class="meta-tag"><span>Gap: --</span></div>
                     <div id="rangeTag" class="meta-tag"><span>Rango Total: --</span></div>
+                    <div id="gap25Tag" class="meta-tag"><span>Gap25: --</span></div>
                     <div id="wrTag" class="meta-tag wr-tag"><span>WR esperado: --</span></div>
                 </div>
 
@@ -1317,6 +1318,8 @@ function calculateLevels() {
     const gapSign = result.gap >= 0 ? '+' : '';
     document.getElementById('gapTag').innerHTML = `<span>Gap: ${gapSign}${result.gap.toFixed(2)} (${gapSign}${result.gapPct.toFixed(2)}%)</span>`;
     document.getElementById('rangeTag').innerHTML = `<span>Rango: ${result.prevRangeTotal.toFixed(1)} pts</span>`;
+    const g25 = result.gap25Pattern;
+    document.getElementById('gap25Tag').innerHTML = `<span>Gap25: ${g25.quarterMovePts.toFixed(1)} pts | MR hit ${g25.meanReversionHitPct.toFixed(1)}%</span>`;
     document.getElementById('wrTag').innerHTML = `<span>WR estimado: ~${result.expectedWR_execution.toFixed(1)}%</span>`;
 
     // Entry/SL labels
@@ -1406,7 +1409,7 @@ function calculateLevels() {
     } else {
         const wrDisplay = result.expectedWR_execution.toFixed(1);
         const qualLabel = (fa && fa.qualityScore >= 4) ? ' ★★★ SETUP PREMIUM' : (fa && fa.qualityScore >= 3) ? ' ★★ SETUP BUENO' : '';
-        alertDiv.innerHTML = `<div class="alert alert-success"><span>✅</span><div><strong>Setup válido${qualLabel}.</strong> Gap DOWN + Extremo Real definido. WR esperado: ~${wrDisplay}%. Verificar 3/4 checklist.</div></div>`;
+        alertDiv.innerHTML = `<div class="alert alert-success"><span>✅</span><div><strong>Setup válido${qualLabel}.</strong> Gap DOWN + Extremo Real definido. TP1 alineado a Gap25. WR esperado: ~${wrDisplay}%. Verificar 3/4 checklist.</div></div>`;
     }
 
     // Summary

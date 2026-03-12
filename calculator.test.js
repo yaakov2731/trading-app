@@ -2,6 +2,7 @@ const {
     instruments,
     entryModes,
     params,
+    GAP25_BACKTEST,
     computeLevels,
     computeFilters,
     computeAdvancedFilters,
@@ -86,6 +87,13 @@ describe('Configuration data', () => {
         expect(params.rangeHighWarn).toBe(60);
         expect(params.rangeExtremeWarn).toBe(100);
         expect(params.bigGapWarn).toBe(1.0);
+    });
+
+    test('gap25 backtest metadata is present', () => {
+        expect(GAP25_BACKTEST.quarterPct).toBe(0.25);
+        expect(GAP25_BACKTEST.sampleSize).toBeGreaterThan(3000);
+        expect(GAP25_BACKTEST.up.meanReversionHitPct).toBeGreaterThan(60);
+        expect(GAP25_BACKTEST.down.meanReversionHitPct).toBeGreaterThan(65);
     });
 });
 
@@ -1125,6 +1133,20 @@ describe('computeLevels – extreme-adaptive execution', () => {
         expect(r.tp2).toBeGreaterThan(r.tp3);
         expect(r.expectedWR_execution).toBeGreaterThanOrEqual(10);
         expect(r.expectedWR_execution).toBeLessThanOrEqual(88);
+    });
+
+    test('adaptive mode aligns TP1 with 25% of previous range', () => {
+        const r = computeLevels(inputs({
+            todayOpen: 6065,
+            prevClose: 6080, // gap down -> LONG
+            extremeReal: 6045,
+            entryModeKey: 'standard',
+            optimizeToExtremes: true,
+        }));
+        const quarter = r.prevRangeTotal * 0.25;
+        const tp1FromExtreme = Math.abs(r.tp1 - r.baseExtreme);
+        expect(tp1FromExtreme).toBeGreaterThanOrEqual(quarter);
+        expect(tp1FromExtreme).toBeLessThanOrEqual(quarter * 1.5);
     });
 });
 
