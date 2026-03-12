@@ -3,6 +3,7 @@ const {
     entryModes,
     params,
     GAP25_BACKTEST,
+    GAP25_INTRADAY_CALIBRATION,
     computeLevels,
     computeFilters,
     computeAdvancedFilters,
@@ -94,6 +95,13 @@ describe('Configuration data', () => {
         expect(GAP25_BACKTEST.sampleSize).toBeGreaterThan(3000);
         expect(GAP25_BACKTEST.up.meanReversionHitPct).toBeGreaterThan(60);
         expect(GAP25_BACKTEST.down.meanReversionHitPct).toBeGreaterThan(65);
+    });
+
+    test('intraday calibration metadata is present', () => {
+        expect(GAP25_INTRADAY_CALIBRATION.up.entryOffsetPts).toBeGreaterThan(0);
+        expect(GAP25_INTRADAY_CALIBRATION.down.entryOffsetPts).toBeGreaterThan(0);
+        expect(GAP25_INTRADAY_CALIBRATION.up.tp1RangeMult).toBe(0.25);
+        expect(GAP25_INTRADAY_CALIBRATION.down.tp1RangeMult).toBe(0.25);
     });
 });
 

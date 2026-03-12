@@ -1319,7 +1319,7 @@ function calculateLevels() {
     document.getElementById('gapTag').innerHTML = `<span>Gap: ${gapSign}${result.gap.toFixed(2)} (${gapSign}${result.gapPct.toFixed(2)}%)</span>`;
     document.getElementById('rangeTag').innerHTML = `<span>Rango: ${result.prevRangeTotal.toFixed(1)} pts</span>`;
     const g25 = result.gap25Pattern;
-    document.getElementById('gap25Tag').innerHTML = `<span>Gap25: ${g25.quarterMovePts.toFixed(1)} pts | MR hit ${g25.meanReversionHitPct.toFixed(1)}%</span>`;
+    document.getElementById('gap25Tag').innerHTML = `<span>Gap25: ${g25.quarterMovePts.toFixed(1)} pts | MR ${g25.meanReversionHitPct.toFixed(1)}% | WR calib ${result.executionMode==='EXTREME_ADAPTIVE'?result.expectedWR_execution.toFixed(1)+'%':'--'}</span>`;
     document.getElementById('wrTag').innerHTML = `<span>WR estimado: ~${result.expectedWR_execution.toFixed(1)}%</span>`;
 
     // Entry/SL labels

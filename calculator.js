@@ -164,6 +164,24 @@ const GAP25_BACKTEST = {
     },
 };
 
+// Calibración intradía reciente (ES=F, 30m, 60d, entrada tras extremo primera hora RTH).
+// Optimizada con TP1 en 25% del rango previo para sostener la hipótesis Gap25.
+const GAP25_INTRADAY_CALIBRATION = {
+    source: 'ES=F 30m 60d (RTH), calibración robusta WR con TP1=25%R',
+    up: {    // gap up -> short
+        entryOffsetPts: 2.5,
+        stopOffsetPts: 8.25,
+        tp1RangeMult: 0.25,
+        observedWRPct: 70.83,
+    },
+    down: {  // gap down -> long
+        entryOffsetPts: 2.5,
+        stopOffsetPts: 8.0,
+        tp1RangeMult: 0.25,
+        observedWRPct: 79.17,
+    },
+};
+
 function clamp(value, min, max) {
     return Math.max(min, Math.min(max, value));
 }
@@ -210,6 +228,7 @@ function optimizeExecutionToExtremes({
     const hist = BACKTEST_STATS.extremeMovement;
     const qualityScore = filterAnalysis?.qualityScore ?? 0;
     const quarterMovePts = gap25Pattern?.quarterMovePts ?? (prevRangeTotal * 0.25);
+    const sideCalib = direction === 'SHORT' ? GAP25_INTRADAY_CALIBRATION.up : GAP25_INTRADAY_CALIBRATION.down;
 
     // Entry más cercano al extremo según régimen de rango y calidad del setup.
     const rangeEntryBase =
@@ -229,12 +248,17 @@ function optimizeExecutionToExtremes({
     entryFromExtremePts = Math.min(entryFromExtremePts, entryMode.entry);
     // Acercar la entrada al extremo respecto al objetivo natural de 25% de rango.
     entryFromExtremePts = Math.min(entryFromExtremePts, Math.max(2.75, quarterMovePts * 0.55));
+    // Anclar a calibración intradía real por lado.
+    entryFromExtremePts = clamp((entryFromExtremePts * 0.55) + (sideCalib.entryOffsetPts * 0.45), 2.5, entryMode.entry);
 
     // Stop desde entry calibrado con MAE histórico (p75/p90).
     let stopFromEntryPts = qualityScore >= 4 ? 3.0 : qualityScore >= 3 ? 3.8 : qualityScore >= 2 ? 4.8 : 5.8;
     if (prevRangeTotal >= 60) stopFromEntryPts += 0.7;
     if (prevRangeTotal >= 100) stopFromEntryPts += 0.5;
     stopFromEntryPts = clamp(stopFromEntryPts, 2.5, Math.max(4.5, hist.mae.p90));
+    // Evitar stops demasiado ajustados: usar referencia intradía calibrada.
+    stopFromEntryPts = Math.max(stopFromEntryPts, sideCalib.stopOffsetPts);
+    if (qualityScore >= 4) stopFromEntryPts = Math.max(sideCalib.stopOffsetPts - 0.5, 2.5);
 
     // TP2 desde extremo limitado por MFE/distancia real al cierre observada.
     let tp2FromExtremePts;
@@ -247,8 +271,9 @@ function optimizeExecutionToExtremes({
     const minTp2FromExtreme = entryFromExtremePts + stopFromEntryPts * 1.35;
     tp2FromExtremePts = Math.max(tp2FromExtremePts, minTp2FromExtreme);
 
-    // TP1 prioriza la hipótesis del 25% del rango previo.
-    let tp1FromExtremePts = Math.max(quarterMovePts, entryFromExtremePts + stopFromEntryPts * 0.75);
+    // TP1 prioriza la hipótesis del 25% del rango previo calibrada intradía.
+    const tp1Anchor = prevRangeTotal * sideCalib.tp1RangeMult;
+    let tp1FromExtremePts = Math.max(tp1Anchor, entryFromExtremePts + stopFromEntryPts * 0.75);
     tp2FromExtremePts = Math.max(tp2FromExtremePts, quarterMovePts * 1.55);
     let tp3FromExtremePts = Math.max(tp2FromExtremePts + 1.0, tp2FromExtremePts * 1.22);
     const tp3Cap = qualityScore >= 3 ? hist.mfe.p90 : hist.distToClose.p90;
@@ -571,14 +596,16 @@ function computeLevels({
     // Ajuste estimado del WR por ejecución más cercana al extremo.
     let expectedWR_execution = expectedWR_combined;
     if (executionMode === 'EXTREME_ADAPTIVE') {
+        const sideCalib = direction === 'SHORT' ? GAP25_INTRADAY_CALIBRATION.up : GAP25_INTRADAY_CALIBRATION.down;
         const baseExecutionWR = Math.max(expectedWR_combined, filteredWR || 0);
+        const blendedRealWR = (baseExecutionWR * 0.7) + (sideCalib.observedWRPct * 0.3);
         const entryTightBonus = Math.max(0, entryPts - effectiveEntryPts) * 1.2;
         const qualityBonus = (filterAnalysis?.qualityScore || 0) * 0.8;
         const riskControlBonus = riskPoints <= BACKTEST_STATS.extremeMovement.mae.p75 ? 1.5 : -1.0;
         const gap25EdgeBonus = gap25Pattern.edgePct / 8; // edge positivo favorece reversión al 25%
         const noExtremePenalty = hasExtremeReal ? 0 : -1.5;
         expectedWR_execution = clamp(
-            baseExecutionWR + entryTightBonus + qualityBonus + riskControlBonus + gap25EdgeBonus + noExtremePenalty,
+            blendedRealWR + entryTightBonus + qualityBonus + riskControlBonus + gap25EdgeBonus + noExtremePenalty,
             10,
             88
         );
@@ -892,7 +919,7 @@ function getFilterIcon(status) {
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
         instruments, entryModes, params, RANGE_FRACTIONS, BACKTEST_STATS,
-        GAP25_BACKTEST,
+        GAP25_BACKTEST, GAP25_INTRADAY_CALIBRATION,
         calcTrueRange, calcRangeLevels, computeLevels, computeFilters,
         computeAdvancedFilters, computeSetupScore, setupScoreLabel,
         suggestEntryMode, getFilterStatusClass, getFilterIcon,
