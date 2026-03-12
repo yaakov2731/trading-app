@@ -140,45 +140,45 @@ const BACKTEST_STATS = {
     ]
 };
 
-// Backtest real de patrón GAP ± 25% del rango previo (ES=F, diario, 2010-01-01..2026-03-11)
-// Fuente reproducible en scripts/backtest_gap25.py
+// Backtest real de patrón GAP ± 25% del rango previo desde extremo de primera hora RTH.
+// Fuente reproducible en scripts/calibrate_gap25_databento.py (Databento 1m, 2010-06-07..2026-02-26)
 const GAP25_BACKTEST = {
-    source: 'Yahoo Finance ES=F daily (2010-01-01..2026-03-11)',
-    sampleSize: 3740,
+    source: 'Databento ES 1m RTH first-touch (2010-06-07..2026-02-26)',
+    sampleSize: 3809,
     quarterPct: 0.25,
     up: {
-        n: 1865,
-        meanReversionHitPct: 67.02,
-        continuationHitPct: 70.35,
-        onlyMeanReversionPct: 26.92,
-        onlyContinuationPct: 30.24,
-        ambiguousPct: 40.11,
+        n: 2107,
+        meanReversionHitPct: 78.79,
+        continuationHitPct: 16.66,
+        onlyMeanReversionPct: 78.79,
+        onlyContinuationPct: 16.66,
+        ambiguousPct: 0.0,
     },
     down: {
-        n: 1875,
-        meanReversionHitPct: 72.27,
-        continuationHitPct: 66.24,
-        onlyMeanReversionPct: 31.04,
-        onlyContinuationPct: 25.01,
-        ambiguousPct: 41.23,
+        n: 1702,
+        meanReversionHitPct: 87.72,
+        continuationHitPct: 10.93,
+        onlyMeanReversionPct: 87.72,
+        onlyContinuationPct: 10.93,
+        ambiguousPct: 0.0,
     },
 };
 
-// Calibración intradía reciente (ES=F, 30m, 60d, entrada tras extremo primera hora RTH).
-// Optimizada con TP1 en 25% del rango previo para sostener la hipótesis Gap25.
+// Calibración robusta Databento 1m (3809 días, 2010-2026).
+// Objetivo: maximizar WR con TP1=25%R y R:R medio en banda realista [1.2, 3.5].
 const GAP25_INTRADAY_CALIBRATION = {
-    source: 'ES=F 30m 60d (RTH), calibración robusta WR con TP1=25%R',
+    source: 'Databento ES 1m full sample (RTH), calibración WR robusta con TP1=25%R',
     up: {    // gap up -> short
-        entryOffsetPts: 2.5,
-        stopOffsetPts: 8.25,
+        entryOffsetPts: 1.0,
+        stopOffsetPts: 6.0,
         tp1RangeMult: 0.25,
-        observedWRPct: 70.83,
+        observedWRPct: 77.79,
     },
     down: {  // gap down -> long
-        entryOffsetPts: 2.5,
-        stopOffsetPts: 8.0,
+        entryOffsetPts: 1.0,
+        stopOffsetPts: 6.0,
         tp1RangeMult: 0.25,
-        observedWRPct: 79.17,
+        observedWRPct: 86.08,
     },
 };
 
@@ -241,15 +241,15 @@ function optimizeExecutionToExtremes({
     const setupAdj = setupScore >= 70 ? -0.2 : setupScore < 30 ? 0.4 : 0;
     let entryFromExtremePts = clamp(
         rangeEntryBase + qualityAdj + uncertaintyAdj + setupAdj,
-        3.0,
-        Math.max(3.0, entryMode.entry)
+        1.0,
+        Math.max(1.0, entryMode.entry)
     );
     // Nunca alejar más la entrada que el modo elegido por el usuario.
     entryFromExtremePts = Math.min(entryFromExtremePts, entryMode.entry);
     // Acercar la entrada al extremo respecto al objetivo natural de 25% de rango.
-    entryFromExtremePts = Math.min(entryFromExtremePts, Math.max(2.75, quarterMovePts * 0.55));
+    entryFromExtremePts = Math.min(entryFromExtremePts, Math.max(1.0, quarterMovePts * 0.55));
     // Anclar a calibración intradía real por lado.
-    entryFromExtremePts = clamp((entryFromExtremePts * 0.55) + (sideCalib.entryOffsetPts * 0.45), 2.5, entryMode.entry);
+    entryFromExtremePts = clamp((entryFromExtremePts * 0.55) + (sideCalib.entryOffsetPts * 0.45), 1.0, entryMode.entry);
 
     // Stop desde entry calibrado con MAE histórico (p75/p90).
     let stopFromEntryPts = qualityScore >= 4 ? 3.0 : qualityScore >= 3 ? 3.8 : qualityScore >= 2 ? 4.8 : 5.8;

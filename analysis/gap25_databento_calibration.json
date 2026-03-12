@@ -1,0 +1,51 @@
+{
+  "source": "C:\\Users\\jcbru\\OneDrive\\Desktop\\ES_1m_databento.parquet",
+  "meta": {
+    "rows_1m": 5440897,
+    "range_start_utc": "2010-06-07 00:00:00+00:00",
+    "range_end_utc": "2026-02-26 23:59:00+00:00",
+    "days_model": 3809
+  },
+  "first_touch_gap25": {
+    "UP": {
+      "n": 2107,
+      "mr_first_pct": 78.78500237304225,
+      "ct_first_pct": 16.65875652586616,
+      "both_pct": 0.0,
+      "none_pct": 4.556241101091599
+    },
+    "DOWN": {
+      "n": 1702,
+      "mr_first_pct": 87.72032902467684,
+      "ct_first_pct": 10.928319623971799,
+      "both_pct": 0.0,
+      "none_pct": 1.3513513513513513
+    }
+  },
+  "selected_for_app": {
+    "UP": {
+      "entry_off": 1.0,
+      "stop_off": 6.0,
+      "tp_mult": 0.25,
+      "trades": 2107,
+      "wins": 1639,
+      "losses": 468,
+      "ambiguous": 0,
+      "wr": 0.7778832463217845,
+      "rr": 1.2270902547065345,
+      "expectancy_r": 0.732416197182729
+    },
+    "DOWN": {
+      "entry_off": 1.0,
+      "stop_off": 6.0,
+      "tp_mult": 0.25,
+      "trades": 1702,
+      "wins": 1465,
+      "losses": 237,
+      "ambiguous": 0,
+      "wr": 0.8607520564042304,
+      "rr": 1.2249130924402654,
+      "expectancy_r": 0.9150985196386539
+    }
+  }
+}
