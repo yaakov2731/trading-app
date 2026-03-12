@@ -4,6 +4,9 @@ const {
     params,
     GAP25_BACKTEST,
     GAP25_INTRADAY_CALIBRATION,
+    RANGE_BUCKET_KEYS,
+    getRangeBucket,
+    getSideCalibration,
     computeLevels,
     computeFilters,
     computeAdvancedFilters,
@@ -102,6 +105,34 @@ describe('Configuration data', () => {
         expect(GAP25_INTRADAY_CALIBRATION.down.entryOffsetPts).toBeGreaterThan(0);
         expect(GAP25_INTRADAY_CALIBRATION.up.tp1RangeMult).toBe(0.25);
         expect(GAP25_INTRADAY_CALIBRATION.down.tp1RangeMult).toBe(0.25);
+        expect(GAP25_INTRADAY_CALIBRATION.buckets[RANGE_BUCKET_KEYS.LT25].up.entryOffsetPts).toBeGreaterThan(0);
+        expect(GAP25_INTRADAY_CALIBRATION.buckets[RANGE_BUCKET_KEYS.R100_PLUS].down.stopOffsetPts).toBeGreaterThan(0);
+    });
+});
+
+describe('Gap25 bucket calibration helpers', () => {
+    test('getRangeBucket maps range boundaries correctly', () => {
+        expect(getRangeBucket(24.99)).toBe(RANGE_BUCKET_KEYS.LT25);
+        expect(getRangeBucket(25)).toBe(RANGE_BUCKET_KEYS.R25_40);
+        expect(getRangeBucket(39.99)).toBe(RANGE_BUCKET_KEYS.R25_40);
+        expect(getRangeBucket(40)).toBe(RANGE_BUCKET_KEYS.R40_60);
+        expect(getRangeBucket(59.99)).toBe(RANGE_BUCKET_KEYS.R40_60);
+        expect(getRangeBucket(60)).toBe(RANGE_BUCKET_KEYS.R60_100);
+        expect(getRangeBucket(99.99)).toBe(RANGE_BUCKET_KEYS.R60_100);
+        expect(getRangeBucket(100)).toBe(RANGE_BUCKET_KEYS.R100_PLUS);
+    });
+
+    test('getSideCalibration selects side and bucket-specific parameters', () => {
+        const shortCalib = getSideCalibration('SHORT', 20);
+        expect(shortCalib.sideKey).toBe('up');
+        expect(shortCalib.bucketKey).toBe(RANGE_BUCKET_KEYS.LT25);
+        expect(shortCalib.entryOffsetPts).toBeCloseTo(0.75, 6);
+
+        const longCalib = getSideCalibration('LONG', 110);
+        expect(longCalib.sideKey).toBe('down');
+        expect(longCalib.bucketKey).toBe(RANGE_BUCKET_KEYS.R100_PLUS);
+        expect(longCalib.stopOffsetPts).toBeCloseTo(9.75, 6);
+        expect(longCalib.tp1RangeMult).toBe(0.25);
     });
 });
 

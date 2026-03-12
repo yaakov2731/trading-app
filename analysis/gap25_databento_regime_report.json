@@ -1,0 +1,145 @@
+{
+  "source": "C:\\Users\\jcbru\\OneDrive\\Desktop\\ES_1m_databento.parquet",
+  "meta": {
+    "rows_1m": 5440897,
+    "range_start_utc": "2010-06-07 00:00:00+00:00",
+    "range_end_utc": "2026-02-26 23:59:00+00:00",
+    "days_model": 3809
+  },
+  "regime_report": {
+    "UP": {
+      "lt25": {
+        "label": "<25 pts",
+        "days": 1100,
+        "avg_prev_range": 14.415,
+        "gap_abs_mean": 6.774772727272727,
+        "mr_first_pct": 81.45454545454545,
+        "ct_first_pct": 15.818181818181817,
+        "selected_entry_off": 0.75,
+        "selected_stop_off": 2.75,
+        "selected_wr_pct": 78.81818181818183,
+        "selected_rr": 1.0377272727272717,
+        "selected_expectancy_r": 0.6060995867768587
+      },
+      "r25_40": {
+        "label": "25-40 pts",
+        "days": 405,
+        "avg_prev_range": 31.62530864197531,
+        "gap_abs_mean": 13.090123456790124,
+        "mr_first_pct": 78.51851851851852,
+        "ct_first_pct": 17.530864197530864,
+        "selected_entry_off": 0.75,
+        "selected_stop_off": 6.25,
+        "selected_wr_pct": 79.01234567901234,
+        "selected_rr": 1.1450123456790118,
+        "selected_expectancy_r": 0.694824569425392
+      },
+      "r40_60": {
+        "label": "40-60 pts",
+        "days": 301,
+        "avg_prev_range": 48.75498338870432,
+        "gap_abs_mean": 19.241694352159467,
+        "mr_first_pct": 77.0764119601329,
+        "ct_first_pct": 17.275747508305646,
+        "selected_entry_off": 0.75,
+        "selected_stop_off": 10.0,
+        "selected_wr_pct": 77.74086378737542,
+        "selected_rr": 1.1438745847176077,
+        "selected_expectancy_r": 0.6666666206774757
+      },
+      "r60_100": {
+        "label": "60-100 pts",
+        "days": 224,
+        "avg_prev_range": 75.01897321428571,
+        "gap_abs_mean": 26.816964285714285,
+        "mr_first_pct": 70.53571428571429,
+        "ct_first_pct": 17.410714285714285,
+        "selected_entry_off": 0.75,
+        "selected_stop_off": 10.25,
+        "selected_wr_pct": 66.96428571428571,
+        "selected_rr": 1.756560322299651,
+        "selected_expectancy_r": 0.8459109301113733
+      },
+      "r100_plus": {
+        "label": ">=100 pts",
+        "days": 77,
+        "avg_prev_range": 134.22402597402598,
+        "gap_abs_mean": 38.29220779220779,
+        "mr_first_pct": 72.72727272727273,
+        "ct_first_pct": 19.480519480519483,
+        "selected_entry_off": 1.25,
+        "selected_stop_off": 9.25,
+        "selected_wr_pct": 68.83116883116884,
+        "selected_rr": 3.492541242541243,
+        "selected_expectancy_r": 2.092268647463453
+      }
+    },
+    "DOWN": {
+      "lt25": {
+        "label": "<25 pts",
+        "days": 913,
+        "avg_prev_range": 14.338992332968237,
+        "gap_abs_mean": 6.8096933187294635,
+        "mr_first_pct": 89.92332968236583,
+        "ct_first_pct": 9.41949616648412,
+        "selected_entry_off": 0.75,
+        "selected_stop_off": 2.75,
+        "selected_wr_pct": 87.73274917853232,
+        "selected_rr": 1.0308174848152931,
+        "selected_expectancy_r": 0.7816920102267796
+      },
+      "r25_40": {
+        "label": "25-40 pts",
+        "days": 314,
+        "avg_prev_range": 31.480095541401273,
+        "gap_abs_mean": 14.561305732484076,
+        "mr_first_pct": 88.85350318471338,
+        "ct_first_pct": 9.872611464968154,
+        "selected_entry_off": 0.75,
+        "selected_stop_off": 7.0,
+        "selected_wr_pct": 88.53503184713377,
+        "selected_rr": 1.01714626933576,
+        "selected_expectancy_r": 0.7858810919596857
+      },
+      "r40_60": {
+        "label": "40-60 pts",
+        "days": 237,
+        "avg_prev_range": 48.40084388185654,
+        "gap_abs_mean": 21.387130801687764,
+        "mr_first_pct": 83.12236286919831,
+        "ct_first_pct": 14.345991561181433,
+        "selected_entry_off": 0.75,
+        "selected_stop_off": 9.5,
+        "selected_wr_pct": 81.85654008438819,
+        "selected_rr": 1.1947590495225406,
+        "selected_expectancy_r": 0.7965538211281556
+      },
+      "r60_100": {
+        "label": "60-100 pts",
+        "days": 169,
+        "avg_prev_range": 75.8180473372781,
+        "gap_abs_mean": 27.431952662721894,
+        "mr_first_pct": 81.65680473372781,
+        "ct_first_pct": 15.384615384615385,
+        "selected_entry_off": 0.75,
+        "selected_stop_off": 8.5,
+        "selected_wr_pct": 77.51479289940828,
+        "selected_rr": 2.1417072746258268,
+        "selected_expectancy_r": 1.4352878874318538
+      },
+      "r100_plus": {
+        "label": ">=100 pts",
+        "days": 69,
+        "avg_prev_range": 138.8514492753623,
+        "gap_abs_mean": 48.583333333333336,
+        "mr_first_pct": 84.05797101449275,
+        "ct_first_pct": 13.043478260869565,
+        "selected_entry_off": 0.75,
+        "selected_stop_off": 9.75,
+        "selected_wr_pct": 78.26086956521739,
+        "selected_rr": 3.4833704942400594,
+        "selected_expectancy_r": 2.508724734622655
+      }
+    }
+  }
+}

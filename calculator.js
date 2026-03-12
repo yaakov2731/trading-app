@@ -164,26 +164,91 @@ const GAP25_BACKTEST = {
     },
 };
 
-// Calibración robusta Databento 1m (3809 días, 2010-2026).
-// Objetivo: maximizar WR con TP1=25%R y R:R medio en banda realista [1.2, 3.5].
+const RANGE_BUCKET_KEYS = {
+    LT25: 'lt25',
+    R25_40: 'r25_40',
+    R40_60: 'r40_60',
+    R60_100: 'r60_100',
+    R100_PLUS: 'r100_plus',
+};
+
+// Calibración robusta Databento 1m (3809 días, 2010-2026) por régimen de rango.
+// Objetivo: maximizar WR con TP1=25%R y R:R medio realista por bucket.
 const GAP25_INTRADAY_CALIBRATION = {
-    source: 'Databento ES 1m full sample (RTH), calibración WR robusta con TP1=25%R',
+    source: 'Databento ES 1m full sample (RTH), calibración bucketizada por rango previo',
+    tp1RangeMult: 0.25,
+    // Fallback general por lado (full sample), se usa si falta bucket.
     up: {    // gap up -> short
-        entryOffsetPts: 1.0,
-        stopOffsetPts: 6.0,
+        entryOffsetPts: 0.75,
+        stopOffsetPts: 7.5,
         tp1RangeMult: 0.25,
-        observedWRPct: 77.79,
+        observedWRPct: 78.97,
     },
     down: {  // gap down -> long
-        entryOffsetPts: 1.0,
-        stopOffsetPts: 6.0,
+        entryOffsetPts: 0.75,
+        stopOffsetPts: 7.5,
         tp1RangeMult: 0.25,
-        observedWRPct: 86.08,
+        observedWRPct: 87.66,
+    },
+    // Selección robusta por bucket (Databento 1m RTH).
+    buckets: {
+        [RANGE_BUCKET_KEYS.LT25]: {
+            label: '<25 pts',
+            up: { entryOffsetPts: 0.75, stopOffsetPts: 2.75, tp1RangeMult: 0.25, observedWRPct: 78.82 },
+            down: { entryOffsetPts: 0.75, stopOffsetPts: 2.75, tp1RangeMult: 0.25, observedWRPct: 87.73 },
+        },
+        [RANGE_BUCKET_KEYS.R25_40]: {
+            label: '25-40 pts',
+            up: { entryOffsetPts: 0.75, stopOffsetPts: 6.25, tp1RangeMult: 0.25, observedWRPct: 79.01 },
+            down: { entryOffsetPts: 0.75, stopOffsetPts: 7.0, tp1RangeMult: 0.25, observedWRPct: 88.54 },
+        },
+        [RANGE_BUCKET_KEYS.R40_60]: {
+            label: '40-60 pts',
+            up: { entryOffsetPts: 0.75, stopOffsetPts: 10.0, tp1RangeMult: 0.25, observedWRPct: 77.74 },
+            down: { entryOffsetPts: 0.75, stopOffsetPts: 9.5, tp1RangeMult: 0.25, observedWRPct: 81.86 },
+        },
+        [RANGE_BUCKET_KEYS.R60_100]: {
+            label: '60-100 pts',
+            up: { entryOffsetPts: 0.75, stopOffsetPts: 10.25, tp1RangeMult: 0.25, observedWRPct: 66.96 },
+            down: { entryOffsetPts: 0.75, stopOffsetPts: 8.5, tp1RangeMult: 0.25, observedWRPct: 77.51 },
+        },
+        [RANGE_BUCKET_KEYS.R100_PLUS]: {
+            label: '>=100 pts',
+            up: { entryOffsetPts: 1.25, stopOffsetPts: 9.25, tp1RangeMult: 0.25, observedWRPct: 68.83 },
+            down: { entryOffsetPts: 0.75, stopOffsetPts: 9.75, tp1RangeMult: 0.25, observedWRPct: 78.26 },
+        },
     },
 };
 
 function clamp(value, min, max) {
     return Math.max(min, Math.min(max, value));
+}
+
+function getRangeBucket(prevRangeTotal) {
+    if (prevRangeTotal < 25) return RANGE_BUCKET_KEYS.LT25;
+    if (prevRangeTotal < 40) return RANGE_BUCKET_KEYS.R25_40;
+    if (prevRangeTotal < 60) return RANGE_BUCKET_KEYS.R40_60;
+    if (prevRangeTotal < 100) return RANGE_BUCKET_KEYS.R60_100;
+    return RANGE_BUCKET_KEYS.R100_PLUS;
+}
+
+function getSideCalibration(direction, prevRangeTotal) {
+    const sideKey = direction === 'SHORT' ? 'up' : 'down';
+    const bucketKey = getRangeBucket(prevRangeTotal);
+    const bucket = GAP25_INTRADAY_CALIBRATION.buckets[bucketKey];
+    const fallback = GAP25_INTRADAY_CALIBRATION[sideKey];
+    const bucketSide = bucket?.[sideKey];
+    const merged = {
+        ...fallback,
+        ...(bucketSide || {}),
+    };
+    return {
+        ...merged,
+        sideKey,
+        bucketKey,
+        bucketLabel: bucket?.label || 'n/a',
+        tp1RangeMult: merged.tp1RangeMult ?? GAP25_INTRADAY_CALIBRATION.tp1RangeMult,
+    };
 }
 
 function computeGap25Pattern({ isGapUp, prevRangeTotal, baseExtreme, direction }) {
@@ -228,7 +293,8 @@ function optimizeExecutionToExtremes({
     const hist = BACKTEST_STATS.extremeMovement;
     const qualityScore = filterAnalysis?.qualityScore ?? 0;
     const quarterMovePts = gap25Pattern?.quarterMovePts ?? (prevRangeTotal * 0.25);
-    const sideCalib = direction === 'SHORT' ? GAP25_INTRADAY_CALIBRATION.up : GAP25_INTRADAY_CALIBRATION.down;
+    const sideCalib = getSideCalibration(direction, prevRangeTotal);
+    const minEntryOffset = Math.min(1.0, sideCalib.entryOffsetPts);
 
     // Entry más cercano al extremo según régimen de rango y calidad del setup.
     const rangeEntryBase =
@@ -241,24 +307,25 @@ function optimizeExecutionToExtremes({
     const setupAdj = setupScore >= 70 ? -0.2 : setupScore < 30 ? 0.4 : 0;
     let entryFromExtremePts = clamp(
         rangeEntryBase + qualityAdj + uncertaintyAdj + setupAdj,
-        1.0,
-        Math.max(1.0, entryMode.entry)
+        minEntryOffset,
+        Math.max(minEntryOffset, entryMode.entry)
     );
     // Nunca alejar más la entrada que el modo elegido por el usuario.
     entryFromExtremePts = Math.min(entryFromExtremePts, entryMode.entry);
     // Acercar la entrada al extremo respecto al objetivo natural de 25% de rango.
-    entryFromExtremePts = Math.min(entryFromExtremePts, Math.max(1.0, quarterMovePts * 0.55));
+    entryFromExtremePts = Math.min(entryFromExtremePts, Math.max(minEntryOffset, quarterMovePts * 0.55));
     // Anclar a calibración intradía real por lado.
-    entryFromExtremePts = clamp((entryFromExtremePts * 0.55) + (sideCalib.entryOffsetPts * 0.45), 1.0, entryMode.entry);
+    entryFromExtremePts = clamp((entryFromExtremePts * 0.4) + (sideCalib.entryOffsetPts * 0.6), minEntryOffset, entryMode.entry);
 
     // Stop desde entry calibrado con MAE histórico (p75/p90).
     let stopFromEntryPts = qualityScore >= 4 ? 3.0 : qualityScore >= 3 ? 3.8 : qualityScore >= 2 ? 4.8 : 5.8;
     if (prevRangeTotal >= 60) stopFromEntryPts += 0.7;
     if (prevRangeTotal >= 100) stopFromEntryPts += 0.5;
-    stopFromEntryPts = clamp(stopFromEntryPts, 2.5, Math.max(4.5, hist.mae.p90));
+    const minStopOffset = Math.max(1.75, Math.min(2.5, sideCalib.stopOffsetPts));
+    stopFromEntryPts = clamp(stopFromEntryPts, minStopOffset, Math.max(4.5, hist.mae.p90, sideCalib.stopOffsetPts));
     // Evitar stops demasiado ajustados: usar referencia intradía calibrada.
     stopFromEntryPts = Math.max(stopFromEntryPts, sideCalib.stopOffsetPts);
-    if (qualityScore >= 4) stopFromEntryPts = Math.max(sideCalib.stopOffsetPts - 0.5, 2.5);
+    if (qualityScore >= 4) stopFromEntryPts = Math.max(sideCalib.stopOffsetPts - 0.5, minStopOffset);
 
     // TP2 desde extremo limitado por MFE/distancia real al cierre observada.
     let tp2FromExtremePts;
@@ -307,6 +374,9 @@ function optimizeExecutionToExtremes({
         tp2FromExtremePts,
         tp3FromExtremePts,
         quarterMovePts,
+        calibrationBucket: sideCalib.bucketKey,
+        calibrationBucketLabel: sideCalib.bucketLabel,
+        calibrationObservedWRPct: sideCalib.observedWRPct,
     };
 }
 
@@ -596,9 +666,9 @@ function computeLevels({
     // Ajuste estimado del WR por ejecución más cercana al extremo.
     let expectedWR_execution = expectedWR_combined;
     if (executionMode === 'EXTREME_ADAPTIVE') {
-        const sideCalib = direction === 'SHORT' ? GAP25_INTRADAY_CALIBRATION.up : GAP25_INTRADAY_CALIBRATION.down;
+        const sideCalib = getSideCalibration(direction, prevRangeTotal);
         const baseExecutionWR = Math.max(expectedWR_combined, filteredWR || 0);
-        const blendedRealWR = (baseExecutionWR * 0.7) + (sideCalib.observedWRPct * 0.3);
+        const blendedRealWR = (baseExecutionWR * 0.65) + (sideCalib.observedWRPct * 0.35);
         const entryTightBonus = Math.max(0, entryPts - effectiveEntryPts) * 1.2;
         const qualityBonus = (filterAnalysis?.qualityScore || 0) * 0.8;
         const riskControlBonus = riskPoints <= BACKTEST_STATS.extremeMovement.mae.p75 ? 1.5 : -1.0;
@@ -621,6 +691,7 @@ function computeLevels({
     return {
         // Rango
         prevRangeTotal,
+        rangeBucket: getRangeBucket(prevRangeTotal),
         prevTrueHigh,
         prevTrueLow,
         // Gap
@@ -919,10 +990,11 @@ function getFilterIcon(status) {
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
         instruments, entryModes, params, RANGE_FRACTIONS, BACKTEST_STATS,
-        GAP25_BACKTEST, GAP25_INTRADAY_CALIBRATION,
+        GAP25_BACKTEST, GAP25_INTRADAY_CALIBRATION, RANGE_BUCKET_KEYS,
         calcTrueRange, calcRangeLevels, computeLevels, computeFilters,
         computeAdvancedFilters, computeSetupScore, setupScoreLabel,
         suggestEntryMode, getFilterStatusClass, getFilterIcon,
         optimizeExecutionToExtremes, computeGap25Pattern,
+        getRangeBucket, getSideCalibration,
     };
 }

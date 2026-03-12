@@ -22,30 +22,252 @@
       "none_pct": 1.3513513513513513
     }
   },
-  "selected_for_app": {
+  "first_touch_gap25_by_bucket": {
     "UP": {
-      "entry_off": 1.0,
-      "stop_off": 6.0,
-      "tp_mult": 0.25,
-      "trades": 2107,
-      "wins": 1639,
-      "losses": 468,
-      "ambiguous": 0,
-      "wr": 0.7778832463217845,
-      "rr": 1.2270902547065345,
-      "expectancy_r": 0.732416197182729
+      "lt25": {
+        "label": "<25 pts",
+        "n": 1100,
+        "mr_first_pct": 81.45454545454545,
+        "ct_first_pct": 15.818181818181817,
+        "both_pct": 0.0,
+        "none_pct": 2.727272727272727
+      },
+      "r25_40": {
+        "label": "25-40 pts",
+        "n": 405,
+        "mr_first_pct": 78.51851851851852,
+        "ct_first_pct": 17.530864197530864,
+        "both_pct": 0.0,
+        "none_pct": 3.950617283950617
+      },
+      "r40_60": {
+        "label": "40-60 pts",
+        "n": 301,
+        "mr_first_pct": 77.0764119601329,
+        "ct_first_pct": 17.275747508305646,
+        "both_pct": 0.0,
+        "none_pct": 5.647840531561462
+      },
+      "r60_100": {
+        "label": "60-100 pts",
+        "n": 224,
+        "mr_first_pct": 70.53571428571429,
+        "ct_first_pct": 17.410714285714285,
+        "both_pct": 0.0,
+        "none_pct": 12.053571428571429
+      },
+      "r100_plus": {
+        "label": ">=100 pts",
+        "n": 77,
+        "mr_first_pct": 72.72727272727273,
+        "ct_first_pct": 19.480519480519483,
+        "both_pct": 0.0,
+        "none_pct": 7.792207792207792
+      }
     },
     "DOWN": {
-      "entry_off": 1.0,
-      "stop_off": 6.0,
+      "lt25": {
+        "label": "<25 pts",
+        "n": 913,
+        "mr_first_pct": 89.92332968236583,
+        "ct_first_pct": 9.41949616648412,
+        "both_pct": 0.0,
+        "none_pct": 0.6571741511500547
+      },
+      "r25_40": {
+        "label": "25-40 pts",
+        "n": 314,
+        "mr_first_pct": 88.85350318471338,
+        "ct_first_pct": 9.872611464968154,
+        "both_pct": 0.0,
+        "none_pct": 1.2738853503184715
+      },
+      "r40_60": {
+        "label": "40-60 pts",
+        "n": 237,
+        "mr_first_pct": 83.12236286919831,
+        "ct_first_pct": 14.345991561181433,
+        "both_pct": 0.0,
+        "none_pct": 2.5316455696202533
+      },
+      "r60_100": {
+        "label": "60-100 pts",
+        "n": 169,
+        "mr_first_pct": 81.65680473372781,
+        "ct_first_pct": 15.384615384615385,
+        "both_pct": 0.0,
+        "none_pct": 2.9585798816568047
+      },
+      "r100_plus": {
+        "label": ">=100 pts",
+        "n": 69,
+        "mr_first_pct": 84.05797101449275,
+        "ct_first_pct": 13.043478260869565,
+        "both_pct": 0.0,
+        "none_pct": 2.898550724637681
+      }
+    }
+  },
+  "selected_for_app": {
+    "UP": {
+      "entry_off": 0.75,
+      "stop_off": 7.5,
+      "tp_mult": 0.25,
+      "trades": 2107,
+      "wins": 1664,
+      "losses": 443,
+      "ambiguous": 0,
+      "wr": 0.7897484575225439,
+      "rr": 1.015005537098562,
+      "expectancy_r": 0.5913475148229743
+    },
+    "DOWN": {
+      "entry_off": 0.75,
+      "stop_off": 7.5,
       "tp_mult": 0.25,
       "trades": 1702,
-      "wins": 1465,
-      "losses": 237,
+      "wins": 1492,
+      "losses": 210,
       "ambiguous": 0,
-      "wr": 0.8607520564042304,
-      "rr": 1.2249130924402654,
-      "expectancy_r": 0.9150985196386539
+      "wr": 0.8766157461809636,
+      "rr": 1.0132246376811587,
+      "expectancy_r": 0.7648244179907691
+    }
+  },
+  "selected_for_app_by_bucket": {
+    "UP": {
+      "lt25": {
+        "label": "<25 pts",
+        "entry_off": 0.75,
+        "stop_off": 2.75,
+        "tp_mult": 0.25,
+        "trades": 1100,
+        "wins": 867,
+        "losses": 233,
+        "ambiguous": 0,
+        "wr": 0.7881818181818182,
+        "rr": 1.0377272727272717,
+        "expectancy_r": 0.6060995867768587
+      },
+      "r25_40": {
+        "label": "25-40 pts",
+        "entry_off": 0.75,
+        "stop_off": 6.25,
+        "tp_mult": 0.25,
+        "trades": 405,
+        "wins": 320,
+        "losses": 85,
+        "ambiguous": 0,
+        "wr": 0.7901234567901234,
+        "rr": 1.1450123456790118,
+        "expectancy_r": 0.694824569425392
+      },
+      "r40_60": {
+        "label": "40-60 pts",
+        "entry_off": 0.75,
+        "stop_off": 10.0,
+        "tp_mult": 0.25,
+        "trades": 301,
+        "wins": 234,
+        "losses": 67,
+        "ambiguous": 0,
+        "wr": 0.7774086378737541,
+        "rr": 1.1438745847176077,
+        "expectancy_r": 0.6666666206774757
+      },
+      "r60_100": {
+        "label": "60-100 pts",
+        "entry_off": 0.75,
+        "stop_off": 10.25,
+        "tp_mult": 0.25,
+        "trades": 224,
+        "wins": 150,
+        "losses": 74,
+        "ambiguous": 0,
+        "wr": 0.6696428571428571,
+        "rr": 1.756560322299651,
+        "expectancy_r": 0.8459109301113733
+      },
+      "r100_plus": {
+        "label": ">=100 pts",
+        "entry_off": 1.25,
+        "stop_off": 9.25,
+        "tp_mult": 0.25,
+        "trades": 77,
+        "wins": 53,
+        "losses": 24,
+        "ambiguous": 0,
+        "wr": 0.6883116883116883,
+        "rr": 3.492541242541243,
+        "expectancy_r": 2.092268647463453
+      }
+    },
+    "DOWN": {
+      "lt25": {
+        "label": "<25 pts",
+        "entry_off": 0.75,
+        "stop_off": 2.75,
+        "tp_mult": 0.25,
+        "trades": 913,
+        "wins": 801,
+        "losses": 112,
+        "ambiguous": 0,
+        "wr": 0.8773274917853231,
+        "rr": 1.0308174848152931,
+        "expectancy_r": 0.7816920102267796
+      },
+      "r25_40": {
+        "label": "25-40 pts",
+        "entry_off": 0.75,
+        "stop_off": 7.0,
+        "tp_mult": 0.25,
+        "trades": 314,
+        "wins": 278,
+        "losses": 36,
+        "ambiguous": 0,
+        "wr": 0.8853503184713376,
+        "rr": 1.01714626933576,
+        "expectancy_r": 0.7858810919596857
+      },
+      "r40_60": {
+        "label": "40-60 pts",
+        "entry_off": 0.75,
+        "stop_off": 9.5,
+        "tp_mult": 0.25,
+        "trades": 237,
+        "wins": 194,
+        "losses": 43,
+        "ambiguous": 0,
+        "wr": 0.8185654008438819,
+        "rr": 1.1947590495225406,
+        "expectancy_r": 0.7965538211281556
+      },
+      "r60_100": {
+        "label": "60-100 pts",
+        "entry_off": 0.75,
+        "stop_off": 8.5,
+        "tp_mult": 0.25,
+        "trades": 169,
+        "wins": 131,
+        "losses": 38,
+        "ambiguous": 0,
+        "wr": 0.7751479289940828,
+        "rr": 2.1417072746258268,
+        "expectancy_r": 1.4352878874318538
+      },
+      "r100_plus": {
+        "label": ">=100 pts",
+        "entry_off": 0.75,
+        "stop_off": 9.75,
+        "tp_mult": 0.25,
+        "trades": 69,
+        "wins": 54,
+        "losses": 15,
+        "ambiguous": 0,
+        "wr": 0.782608695652174,
+        "rr": 3.4833704942400594,
+        "expectancy_r": 2.508724734622655
+      }
     }
   }
 }
