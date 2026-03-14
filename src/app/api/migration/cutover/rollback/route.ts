@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 /**
  * app/api/migration/cutover/rollback/route.ts
  * POST /api/migration/cutover/rollback — rollback cutover (admin only)

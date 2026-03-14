@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 /**
  * app/api/migration/cutover/route.ts
  * GET  /api/migration/cutover — get cutover status + preflight

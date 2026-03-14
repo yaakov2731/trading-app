@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 /**
  * app/api/migration/opening-balances/route.ts
  * GET  /api/migration/opening-balances — list candidates (with ?format=xlsx)

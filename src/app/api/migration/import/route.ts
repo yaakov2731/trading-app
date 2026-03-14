@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 /**
  * app/api/migration/import/route.ts
  * POST /api/migration/import — create a new import run from parsed rows.

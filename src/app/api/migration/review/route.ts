@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 /**
  * app/api/migration/review/route.ts
  * GET /api/migration/review — list review rows (with ?format=xlsx for export)
