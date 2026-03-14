@@ -20,17 +20,18 @@ import { cn } from '@/lib/utils/cn'
 const PAGE_SIZE = 50
 
 interface MovementsPageClientProps {
-  locations: Location[]
-  products:  Product[]
+  locations:        Location[]
+  products:         Product[]
+  initialMovements?: any[]
 }
 
-export function MovementsPageClient({ locations, products }: MovementsPageClientProps) {
+export function MovementsPageClient({ locations, products, initialMovements = [] }: MovementsPageClientProps) {
   const searchParams   = useSearchParams()
   const defaultType    = searchParams.get('type') as any
 
   const [locationId,    setLocationId]    = React.useState(locations[0]?.id ?? '')
-  const [movements,     setMovements]     = React.useState<MovementHistoryRow[]>([])
-  const [total,         setTotal]         = React.useState(0)
+  const [movements,     setMovements]     = React.useState<MovementHistoryRow[]>(initialMovements as any)
+  const [total,         setTotal]         = React.useState(initialMovements.length)
   const [page,          setPage]          = React.useState(0)
   const [isLoading,     setIsLoading]     = React.useState(false)
   const [formOpen,      setFormOpen]      = React.useState(false)

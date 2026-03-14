@@ -1,25 +1,24 @@
 import type { Metadata } from 'next'
 import { createServerSupabaseClient } from '@/lib/db/client'
-import { PurchaseForm } from '@/components/forms/purchase-form'
+import { OutputPageClient } from './output-page-client'
 
-export const metadata: Metadata = { title: 'Nueva Compra' }
+export const metadata: Metadata = { title: 'Registrar Salida' }
 
-export default async function NewPurchasePage() {
+export default async function NewOutputPage() {
   const supabase = await createServerSupabaseClient()
 
-  const [locationsRes, suppliersRes, productsRes] = await Promise.all([
+  const [locationsRes, productsRes] = await Promise.all([
     supabase.from('locations').select('*').eq('is_active', true).order('sort_order'),
-    supabase.from('suppliers').select('*').eq('is_active', true).order('name'),
-    supabase.from('products')
+    supabase
+      .from('products')
       .select('*, category:categories(id,name,color,prefix), unit:units(id,name,symbol)')
       .eq('is_active', true)
       .order('name'),
   ])
 
   return (
-    <PurchaseForm
+    <OutputPageClient
       locations={locationsRes.data ?? []}
-      suppliers={suppliersRes.data ?? []}
       products={productsRes.data as any ?? []}
     />
   )
