@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
-import { createServerSupabaseClient } from '@/lib/db/client'
+import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { AppShellProvider } from './app-shell-provider'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {

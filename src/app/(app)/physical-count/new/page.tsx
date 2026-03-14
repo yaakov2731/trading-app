@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { createServerSupabaseClient } from '@/lib/db/client'
+import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { PhysicalCountForm } from './physical-count-form'
 
 export const metadata: Metadata = { title: 'Conteo Físico' }

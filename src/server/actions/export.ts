@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerSupabaseClient } from '@/lib/db/client'
+import { createServerSupabaseClient } from '@/lib/supabase/server'
 import type { ApiResponse } from '@/lib/types'
 
 // =============================================================================

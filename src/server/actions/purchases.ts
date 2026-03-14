@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerSupabaseClient } from '@/lib/db/client'
+import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { createPurchaseEntrySchema } from '@/lib/schemas'
 import { revalidatePath } from 'next/cache'
 import type { ApiResponse, PurchaseEntry } from '@/lib/types'

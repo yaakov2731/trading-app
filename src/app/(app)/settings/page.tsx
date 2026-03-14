@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { createServerSupabaseClient } from '@/lib/db/client'
+import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { SettingsPageClient } from './settings-client'
 
 export const metadata: Metadata = { title: 'Configuración' }

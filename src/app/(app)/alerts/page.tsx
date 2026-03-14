@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { createServerSupabaseClient } from '@/lib/db/client'
+import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { LowStockList } from '@/components/alerts/low-stock-list'
 import type { LowStockAlert } from '@/components/alerts/low-stock-list'
 

@@ -1,7 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createServerSupabaseClient } from '@/lib/db/client'
+import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { createProductSchema, updateProductSchema } from '@/lib/schemas'
 import type { ApiResponse, Product } from '@/lib/types'
 

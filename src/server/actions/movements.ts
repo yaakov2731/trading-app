@@ -1,7 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createServerSupabaseClient } from '@/lib/db/client'
+import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { quickMovementSchema, type QuickMovementInput } from '@/lib/schemas'
 import type { ApiResponse, StockMovement } from '@/lib/types'
 
