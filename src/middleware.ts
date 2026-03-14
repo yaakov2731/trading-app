@@ -1,4 +1,4 @@
-import { type NextRequest } from 'next/server'
+import { NextResponse, type NextRequest } from 'next/server'
 import {
   createMiddlewareClient,
   isPublicPath,
@@ -23,7 +23,13 @@ export async function middleware(request: NextRequest) {
   const { supabase, response } = createMiddlewareClient(request)
 
   // Refresh session (critical — do not remove)
-  const { data: { user } } = await supabase.auth.getUser()
+  let user = null
+  try {
+    const { data } = await supabase.auth.getUser()
+    user = data.user
+  } catch {
+    // If Supabase is unreachable, treat as unauthenticated so middleware never crashes
+  }
 
   // Unauthenticated + protected route → login
   if (!user && !isPublicPath(pathname)) {
@@ -42,7 +48,7 @@ export async function middleware(request: NextRequest) {
       : buildLoginRedirect(request)
   }
 
-  return response
+  return response ?? NextResponse.next()
 }
 
 export const config = {
