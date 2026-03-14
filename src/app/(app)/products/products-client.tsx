@@ -34,12 +34,18 @@ export function ProductsPageClient({ initialProducts, categories, units }: Produ
   const [isSubmitting, setIsSubmitting] = React.useState(false)
 
   const {
-    register, handleSubmit, control, reset,
+    register, handleSubmit, control, reset, watch,
     formState: { errors },
   } = useForm<CreateProductInput>({
     resolver: zodResolver(createProductSchema),
     defaultValues: { min_stock: 0 },
   })
+
+  const watchedCategoryId = watch('category_id')
+  const previewCategory = React.useMemo(
+    () => categories.find(c => c.id === watchedCategoryId),
+    [watchedCategoryId, categories]
+  )
 
   const filtered = React.useMemo(() => {
     let result = products
@@ -361,10 +367,40 @@ export function ProductsPageClient({ initialProducts, categories, units }: Produ
               </div>
 
               {!editProduct && (
-                <div className="rounded-xl bg-brand-50 border border-brand-100 px-4 py-3">
-                  <p className="text-xs text-brand-700 font-medium">
-                    El SKU se generará automáticamente según la categoría seleccionada.
-                  </p>
+                <div className={cn(
+                  'rounded-xl border px-4 py-3 transition-all duration-200',
+                  previewCategory
+                    ? 'bg-brand-50 border-brand-200'
+                    : 'bg-slate-50 border-slate-200'
+                )}>
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1">
+                      <p className={cn(
+                        'text-xs font-semibold mb-0.5',
+                        previewCategory ? 'text-brand-700' : 'text-slate-500'
+                      )}>
+                        SKU generado automáticamente
+                      </p>
+                      <p className="text-xs text-slate-400">
+                        {previewCategory
+                          ? `Categoría: ${previewCategory.name}`
+                          : 'Seleccioná una categoría para ver el prefijo de SKU'}
+                      </p>
+                    </div>
+                    <div className={cn(
+                      'font-mono font-bold text-sm px-3 py-1.5 rounded-lg tracking-wide transition-all duration-200',
+                      previewCategory
+                        ? 'bg-white border border-brand-200 text-brand-700 shadow-sm'
+                        : 'bg-slate-100 text-slate-400 border border-slate-200'
+                    )}>
+                      {previewCategory ? `${previewCategory.prefix}-####` : 'XXX-####'}
+                    </div>
+                  </div>
+                  {previewCategory && (
+                    <p className="text-xs text-brand-500 mt-2">
+                      El número se asignará secuencialmente al guardar (ej. <span className="font-semibold">{previewCategory.prefix}-0001</span>)
+                    </p>
+                  )}
                 </div>
               )}
             </DialogBody>

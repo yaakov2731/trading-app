@@ -3,125 +3,141 @@
 import * as React from 'react'
 import { Slot } from '@radix-ui/react-slot'
 import { cva, type VariantProps } from 'class-variance-authority'
-import { Loader2, CheckCircle } from 'lucide-react'
+import { Loader2, CheckCircle2, AlertCircle } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 
 // =============================================================================
-// Premium 3D Button Design System
+// GastroStock — Premium 3D Button System
 //
-// Philosophy: Corporate elegance + tactile depth + operational clarity.
-// Every button feels physically real: you can see and feel the depth,
-// the hover lift, and the press-in click response.
+// Design philosophy:
+//   Every button feels physically real — a layered object resting on a surface.
+//   The user sees depth (the bottom edge), feels the hover lift, and hears
+//   the conceptual "click" as the button presses into the surface.
+//
+// Implementation:
+//   Three-layer box-shadow per state (defined as CSS vars in globals.css):
+//     1. Inner top highlight   → gives the face a subtle light source
+//     2. Colored bottom edge   → the physical "depth ledge" (4px tall)
+//     3. Ambient drop shadow   → grounds the button on the page
+//
+//   On hover:  translateY(-1px) + edge grows to 5px → "lifts"
+//   On active: translateY(+2px) + edge shrinks to 1px → "presses in"
+//   Transition: 100ms for instant tactile feel
 // =============================================================================
 
 const buttonVariants = cva(
-  // Base styles — every button shares these
+  // ── Shared base ────────────────────────────────────────────────────────────
   [
+    // Layout
     'relative inline-flex items-center justify-center gap-2',
-    'font-semibold tracking-tight',
+    // Typography
+    'font-semibold tracking-tight leading-none',
+    // Interaction
     'select-none cursor-pointer',
-    'border-0 outline-none',
-    'focus-visible:ring-2 focus-visible:ring-offset-2',
-    'disabled:pointer-events-none disabled:opacity-50',
-    'transition-all duration-100 ease-out',
-    'active:duration-75',
-    // 3D press effect — translateY shifts down on click
-    '[&:not(:disabled)]:active:translate-y-[2px]',
+    'no-underline',
+    // Outline override (we use box-shadow for focus)
+    'outline-none',
+    // Disabled
+    'disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed',
+    // Transition timing
+    '[transition:var(--transition-btn)]',
+    // Vertical text alignment precision
+    'whitespace-nowrap',
+    // Prevent text from being selected on rapid clicks
+    '[user-select:none]',
   ],
   {
     variants: {
       variant: {
-        // ── Primary ─────────────────────────────────────────────────────────
-        // Strong blue, 3D depth with bottom edge + ambient shadow
+        // ── Primary (Blue 3D) ───────────────────────────────────────────────
+        // Strong brand action, most prominent CTA. Feels solid and confident.
         primary: [
-          'bg-gradient-to-b from-brand-500 to-brand-600 text-white',
-          'shadow-btn-primary',
-          'hover:shadow-btn-primary-hover hover:-translate-y-[1px]',
-          'active:shadow-btn-primary-active',
-          'focus-visible:ring-brand-400',
+          'btn-3d-primary',
+          'text-white',
+          'focus-visible:ring-2 focus-visible:ring-blue-400/50 focus-visible:ring-offset-1',
         ],
 
-        // ── Secondary ───────────────────────────────────────────────────────
-        // Clean white/light with slate edge — feels premium, not flat
+        // ── Secondary (White 3D) ────────────────────────────────────────────
+        // Supporting action. Lighter weight, still tactile. Clean and premium.
         secondary: [
-          'bg-white text-slate-700',
-          'border border-slate-200',
-          'shadow-btn-secondary',
-          'hover:shadow-btn-secondary-hover hover:-translate-y-[1px] hover:border-slate-300 hover:text-slate-900',
-          'active:shadow-btn-secondary-active',
-          'focus-visible:ring-brand-400',
+          'btn-3d-secondary',
+          'text-slate-700',
+          'hover:text-slate-900',
+          'focus-visible:ring-2 focus-visible:ring-slate-400/30 focus-visible:ring-offset-1',
         ],
 
-        // ── Danger ──────────────────────────────────────────────────────────
+        // ── Danger (Red 3D) ─────────────────────────────────────────────────
+        // Destructive actions. Clear intention, controlled weight.
         danger: [
-          'bg-gradient-to-b from-danger-500 to-danger-600 text-white',
-          'shadow-btn-danger',
-          'hover:shadow-btn-danger-hover hover:-translate-y-[1px]',
-          'active:shadow-btn-danger-active',
-          'focus-visible:ring-danger-400',
+          'btn-3d-danger',
+          'text-white',
+          'focus-visible:ring-2 focus-visible:ring-red-400/50 focus-visible:ring-offset-1',
         ],
 
-        // ── Success ─────────────────────────────────────────────────────────
+        // ── Success (Green 3D) ──────────────────────────────────────────────
+        // Confirmation, submit, save. Positive and clear.
         success: [
-          'bg-gradient-to-b from-success-500 to-success-600 text-white',
-          'shadow-btn-success',
-          'hover:shadow-btn-success-hover hover:-translate-y-[1px]',
-          'active:shadow-btn-success-active',
-          'focus-visible:ring-success-500',
+          'btn-3d-success',
+          'text-white',
+          'focus-visible:ring-2 focus-visible:ring-green-400/50 focus-visible:ring-offset-1',
         ],
 
-        // ── Warning ─────────────────────────────────────────────────────────
+        // ── Warning (Amber 3D) ──────────────────────────────────────────────
+        // Cautious actions, overrides, non-destructive but notable.
         warning: [
-          'bg-gradient-to-b from-amber-400 to-amber-500 text-amber-950',
-          'shadow-[0_4px_0_#b45309,0_5px_8px_rgba(245,158,11,0.25)]',
-          'hover:shadow-[0_5px_0_#b45309,0_6px_12px_rgba(245,158,11,0.3)] hover:-translate-y-[1px]',
-          'active:shadow-[0_1px_0_#b45309,0_2px_4px_rgba(245,158,11,0.15)]',
-          'focus-visible:ring-amber-400',
+          'btn-3d-warning',
+          'text-amber-950',
+          'focus-visible:ring-2 focus-visible:ring-amber-400/50 focus-visible:ring-offset-1',
         ],
 
-        // ── Ghost ───────────────────────────────────────────────────────────
-        // Flat but premium — used for toolbar and nav actions
+        // ── Ghost (Flat) ────────────────────────────────────────────────────
+        // Toolbar actions, secondary navigation. No depth — intentionally flat.
         ghost: [
-          'bg-transparent text-slate-600',
-          'hover:bg-slate-100 hover:text-slate-900',
-          'active:bg-slate-200',
-          'focus-visible:ring-brand-400',
-          // No 3D effect for ghost — intentionally flat
-          '[&:not(:disabled)]:active:translate-y-0',
-        ],
-
-        // ── Link ────────────────────────────────────────────────────────────
-        link: [
-          'bg-transparent text-brand-600 underline-offset-4',
-          'hover:underline hover:text-brand-700',
-          'focus-visible:ring-brand-400',
-          '[&:not(:disabled)]:active:translate-y-0',
-          'shadow-none',
+          'bg-transparent text-slate-500',
+          'hover:bg-slate-100/80 hover:text-slate-900',
+          'active:bg-slate-200/80',
+          'focus-visible:ring-2 focus-visible:ring-slate-400/30',
+          // No 3D press on ghost — flat press only
+          'active:scale-[0.97]',
+          '[transition:background 120ms,color_120ms,transform_80ms]',
         ],
 
         // ── Outline ─────────────────────────────────────────────────────────
+        // Border-only variant for less dominant actions.
         outline: [
-          'bg-transparent text-brand-600 border border-brand-300',
-          'hover:bg-brand-50 hover:border-brand-400',
-          'active:bg-brand-100',
-          'focus-visible:ring-brand-400',
-          '[&:not(:disabled)]:active:translate-y-0',
+          'border border-brand-300 bg-transparent text-brand-600',
+          'hover:bg-brand-50/60 hover:border-brand-400 hover:text-brand-700',
+          'active:bg-brand-100/60',
+          'focus-visible:ring-2 focus-visible:ring-brand-400/30',
+          'active:scale-[0.98]',
+          '[transition:background 120ms,color_120ms,border-color_120ms,transform_80ms]',
+        ],
+
+        // ── Link ────────────────────────────────────────────────────────────
+        // Inline text-link styled button.
+        link: [
+          'bg-transparent text-brand-600 underline-offset-4 decoration-brand-300',
+          'hover:underline hover:text-brand-700',
+          'focus-visible:ring-2 focus-visible:ring-brand-400/30',
+          'active:opacity-70',
+          '[transition:color_120ms,opacity_80ms]',
+          'h-auto! p-0!',
         ],
       },
 
       size: {
-        xs:   'h-7 px-2.5 text-xs rounded-md gap-1.5',
-        sm:   'h-8 px-3 text-sm rounded-md gap-1.5',
-        md:   'h-10 px-4 text-sm rounded-lg gap-2',
-        lg:   'h-12 px-5 text-base rounded-lg gap-2',
-        xl:   'h-14 px-6 text-base rounded-xl gap-2.5',
-        // Icon-only (square)
-        'icon-xs': 'h-7 w-7 p-0 rounded-md',
-        'icon-sm': 'h-8 w-8 p-0 rounded-md',
-        'icon-md': 'h-10 w-10 p-0 rounded-lg',
-        'icon-lg': 'h-12 w-12 p-0 rounded-lg',
-        // Full-width touch target for mobile (min 44px)
-        'touch': 'h-12 px-5 text-base rounded-lg gap-2 w-full',
+        xs:        'h-7  px-2.5  text-xs  rounded-md  gap-1.5',
+        sm:        'h-8  px-3    text-xs  rounded-lg  gap-1.5',
+        md:        'h-10 px-4    text-sm  rounded-xl  gap-2',
+        lg:        'h-11 px-5    text-sm  rounded-xl  gap-2',
+        xl:        'h-13 px-6    text-base rounded-xl gap-2.5',
+        // Square icon buttons
+        'icon-xs': 'h-7  w-7  p-0 rounded-lg  text-xs',
+        'icon-sm': 'h-8  w-8  p-0 rounded-lg  text-xs',
+        'icon-md': 'h-10 w-10 p-0 rounded-xl  text-sm',
+        'icon-lg': 'h-11 w-11 p-0 rounded-xl  text-sm',
+        // Touch-optimized (≥44px, full width)
+        touch:     'h-12 px-5 text-base rounded-xl gap-2 w-full min-h-[44px]',
       },
 
       fullWidth: {
@@ -137,23 +153,35 @@ const buttonVariants = cva(
 )
 
 // =============================================================================
-// Loading state visual
+// Types
 // =============================================================================
 
-type ButtonState = 'idle' | 'loading' | 'success' | 'error'
+export type ButtonVariant = NonNullable<VariantProps<typeof buttonVariants>['variant']>
+export type ButtonSize    = NonNullable<VariantProps<typeof buttonVariants>['size']>
+export type ButtonState   = 'idle' | 'loading' | 'success' | 'error'
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
-  asChild?:    boolean
-  loading?:    boolean
+  // Render as a different element / component (polymorphic)
+  asChild?:     boolean
+  // Async state handling
+  loading?:     boolean
+  state?:       ButtonState
+  // State-specific label overrides
   loadingText?: string
   successText?: string
-  state?:       ButtonState
+  errorText?:   string
+  // Icon slots (not shown during loading/success)
   leftIcon?:    React.ReactNode
   rightIcon?:   React.ReactNode
+  // Layout
   fullWidth?:   boolean
 }
+
+// =============================================================================
+// Button Component
+// =============================================================================
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
@@ -164,9 +192,10 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       fullWidth,
       asChild = false,
       loading = false,
+      state = 'idle',
       loadingText,
       successText,
-      state = 'idle',
+      errorText,
       leftIcon,
       rightIcon,
       disabled,
@@ -176,43 +205,75 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const Comp = asChild ? Slot : 'button'
+
     const isLoading = loading || state === 'loading'
     const isSuccess = state === 'success'
+    const isError   = state === 'error'
     const isDisabled = disabled || isLoading
+
+    // Resolved variant for state overrides
+    const resolvedVariant = isSuccess ? 'success' : isError ? 'danger' : variant
+
+    const label =
+      isLoading ? (loadingText ?? children) :
+      isSuccess ? (successText ?? children) :
+      isError   ? (errorText   ?? children) :
+      children
 
     return (
       <Comp
         ref={ref}
         disabled={isDisabled}
-        className={cn(buttonVariants({ variant, size, fullWidth, className }))}
         aria-busy={isLoading}
+        aria-disabled={isDisabled}
+        className={cn(
+          buttonVariants({ variant: resolvedVariant, size, fullWidth }),
+          className
+        )}
         {...props}
       >
-        {/* Loading spinner */}
+        {/* ── Loading spinner ─────────────────────────────────── */}
         {isLoading && (
-          <Loader2 className="h-4 w-4 animate-spin shrink-0" aria-hidden />
+          <Loader2
+            className="shrink-0 animate-spin"
+            size={size === 'xs' || size === 'sm' ? 13 : 15}
+            aria-hidden
+          />
         )}
 
-        {/* Success checkmark */}
+        {/* ── Success check ───────────────────────────────────── */}
         {isSuccess && !isLoading && (
-          <CheckCircle className="h-4 w-4 shrink-0" aria-hidden />
+          <CheckCircle2
+            className="shrink-0 animate-success-bounce"
+            size={size === 'xs' || size === 'sm' ? 13 : 15}
+            aria-hidden
+          />
         )}
 
-        {/* Left icon (not shown during loading/success) */}
-        {!isLoading && !isSuccess && leftIcon && (
-          <span className="shrink-0" aria-hidden>{leftIcon}</span>
+        {/* ── Error icon ──────────────────────────────────────── */}
+        {isError && !isLoading && (
+          <AlertCircle
+            className="shrink-0"
+            size={size === 'xs' || size === 'sm' ? 13 : 15}
+            aria-hidden
+          />
         )}
 
-        {/* Label */}
-        <span>
-          {isLoading ? (loadingText ?? children) :
-           isSuccess ? (successText ?? children) :
-           children}
-        </span>
+        {/* ── Left icon (hidden during state) ─────────────────── */}
+        {!isLoading && !isSuccess && !isError && leftIcon && (
+          <span className="shrink-0" aria-hidden>
+            {leftIcon}
+          </span>
+        )}
 
-        {/* Right icon */}
-        {!isLoading && !isSuccess && rightIcon && (
-          <span className="shrink-0" aria-hidden>{rightIcon}</span>
+        {/* ── Label ───────────────────────────────────────────── */}
+        {label != null && <span>{label}</span>}
+
+        {/* ── Right icon ──────────────────────────────────────── */}
+        {!isLoading && !isSuccess && !isError && rightIcon && (
+          <span className="shrink-0" aria-hidden>
+            {rightIcon}
+          </span>
         )}
       </Comp>
     )
@@ -224,21 +285,23 @@ Button.displayName = 'Button'
 export { Button, buttonVariants }
 
 // =============================================================================
-// Specialized button presets
+// Pre-composed button shortcuts
 // =============================================================================
 
-export function SaveButton(props: Omit<ButtonProps, 'variant'> & { variant?: ButtonProps['variant'] }) {
-  return <Button variant="primary" {...props}>{props.children ?? 'Guardar'}</Button>
-}
+type BtnAlias = Omit<ButtonProps, 'variant'>
 
-export function CancelButton(props: Omit<ButtonProps, 'variant'>) {
-  return <Button variant="secondary" {...props}>{props.children ?? 'Cancelar'}</Button>
-}
+export const PrimaryButton   = (p: BtnAlias) => <Button variant="primary"   {...p} />
+export const SecondaryButton = (p: BtnAlias) => <Button variant="secondary" {...p} />
+export const DangerButton    = (p: BtnAlias) => <Button variant="danger"    {...p} />
+export const SuccessButton   = (p: BtnAlias) => <Button variant="success"   {...p} />
+export const GhostButton     = (p: BtnAlias) => <Button variant="ghost"     {...p} />
 
-export function DeleteButton(props: Omit<ButtonProps, 'variant'>) {
-  return <Button variant="danger" {...props}>{props.children ?? 'Eliminar'}</Button>
+export function SaveButton(p: BtnAlias & { variant?: ButtonProps['variant'] }) {
+  return <Button variant={p.variant ?? 'primary'} {...p}>{p.children ?? 'Guardar'}</Button>
 }
-
-export function AddButton(props: Omit<ButtonProps, 'variant'>) {
-  return <Button variant="primary" {...props}>{props.children ?? 'Agregar'}</Button>
+export function CancelButton(p: BtnAlias) {
+  return <Button variant="secondary" {...p}>{p.children ?? 'Cancelar'}</Button>
+}
+export function DeleteButton(p: BtnAlias) {
+  return <Button variant="danger" {...p}>{p.children ?? 'Eliminar'}</Button>
 }
