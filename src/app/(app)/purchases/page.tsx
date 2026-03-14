@@ -1,97 +1,240 @@
 import type { Metadata } from 'next'
-import { createServerSupabaseClient } from '@/lib/db/client'
-import { getPurchaseEntries } from '@/server/actions/purchases'
-import { Card } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { formatCurrency, formatDate } from '@/lib/utils/format'
-import { ShoppingCart, Plus } from 'lucide-react'
+import { Suspense } from 'react'
 import Link from 'next/link'
-import { Button } from '@/components/ui/button'
+import { Plus, ShoppingCart, Download, Filter } from 'lucide-react'
+import { requireAuth } from '@/lib/server/auth-guards'
+import { getPurchaseEntries } from '@/lib/server/purchases'
+import { getAccessibleLocations } from '@/lib/server/location-access'
+import { getActiveSupplierOptions } from '@/lib/server/suppliers'
+import { PurchasesTable } from '@/components/purchases/purchases-table'
+import { PurchaseStatusBadge } from '@/components/purchases/purchase-status-badge'
+import { formatCurrency } from '@/lib/utils/format'
+import { PURCHASE_STATUSES, PURCHASE_STATUS_LABELS } from '@/lib/validations/purchases'
 
 export const metadata: Metadata = { title: 'Compras' }
+export const revalidate = 0
 
-const STATUS_LABELS: Record<string, { label: string; variant: any }> = {
-  draft:     { label: 'Borrador',  variant: 'default' },
-  ordered:   { label: 'Pedido',    variant: 'info' },
-  received:  { label: 'Recibido',  variant: 'success' },
-  cancelled: { label: 'Cancelado', variant: 'danger' },
+interface PageProps {
+  searchParams: Promise<Record<string, string | string[]>>
 }
 
-export default async function PurchasesPage() {
-  const entries = await getPurchaseEntries()
+export default async function PurchasesPage({ searchParams }: PageProps) {
+  await requireAuth()
+  const params = await searchParams
+
+  function str(v: string | string[] | undefined) {
+    if (!v) return undefined
+    return Array.isArray(v) ? v[0] : v
+  }
+
+  const page = Number(str(params.page) ?? '1')
+  const pageSize = 20
+
+  const [{ entries, total }, locations, suppliers] = await Promise.all([
+    getPurchaseEntries({
+      location_id: str(params.location_id),
+      supplier_id: str(params.supplier_id),
+      status: str(params.status) as 'draft' | 'received' | 'cancelled' | undefined,
+      from_date: str(params.from_date),
+      to_date: str(params.to_date),
+      search: str(params.search),
+      page,
+      page_size: pageSize,
+    }),
+    getAccessibleLocations(),
+    getActiveSupplierOptions(),
+  ])
+
+  // Quick stats from current page — header summary
+  const totalSpend = entries
+    .filter((e) => e.status === 'received' && e.total_amount != null)
+    .reduce((s, e) => s + (e.total_amount ?? 0), 0)
+
+  const activeFilters = [
+    params.location_id,
+    params.supplier_id,
+    params.status,
+    params.from_date,
+    params.to_date,
+    params.search,
+  ].filter(Boolean).length
 
   return (
-    <div className="space-y-5">
-      {/* ── Header ────────────────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between">
+    <div className="space-y-5 p-4 md:p-6">
+      {/* ── Header ──────────────────────────────────────────────────────────── */}
+      <div className="flex items-center justify-between gap-3">
         <div>
           <h1 className="text-xl font-bold text-slate-900">Compras</h1>
-          <p className="text-sm text-slate-400">{entries.length} registros</p>
+          <p className="mt-0.5 text-sm text-slate-500">
+            {total.toLocaleString('es-AR')} registro{total !== 1 ? 's' : ''}
+            {totalSpend > 0 && (
+              <span className="ml-2 text-slate-400">
+                · <span className="font-semibold text-slate-700">{formatCurrency(totalSpend)}</span> recibido
+              </span>
+            )}
+          </p>
         </div>
-        <Link href="/purchases/new">
-          <Button variant="primary" size="sm" leftIcon={<Plus size={15} />}>
+        <div className="flex items-center gap-2">
+          <a
+            href={`/api/purchases/export?${new URLSearchParams(
+              Object.fromEntries(
+                Object.entries(params).map(([k, v]) => [k, Array.isArray(v) ? v[0] : v ?? ''])
+              )
+            ).toString()}`}
+            className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600 shadow-sm hover:bg-slate-50 transition-colors"
+          >
+            <Download className="h-4 w-4" />
+            Exportar
+          </a>
+          <Link
+            href="/purchases/new"
+            className="flex items-center gap-2 rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-700 active:scale-[0.98]"
+          >
+            <Plus className="h-4 w-4" />
             Nueva compra
-          </Button>
-        </Link>
+          </Link>
+        </div>
       </div>
 
-      {/* ── List ──────────────────────────────────────────────────────────── */}
-      {entries.length === 0 ? (
-        <Card padding="md" className="text-center py-12">
-          <ShoppingCart size={32} className="text-slate-300 mx-auto mb-3" />
-          <p className="text-sm font-semibold text-slate-700 mb-1">Sin compras registradas</p>
-          <p className="text-xs text-slate-400 mb-4">Las compras que registres aparecerán aquí</p>
-          <Link href="/purchases/new">
-            <Button variant="primary" size="sm" leftIcon={<Plus size={14} />}>
-              Registrar primera compra
-            </Button>
-          </Link>
-        </Card>
-      ) : (
-        <div className="rounded-xl border border-slate-200 overflow-hidden bg-white">
-          <div className="divide-y divide-slate-100">
-            {entries.map((entry: any) => {
-              const status = STATUS_LABELS[entry.status] ?? STATUS_LABELS.draft
-              return (
-                <div key={entry.id} className="flex items-center gap-4 px-5 py-4 hover:bg-slate-50 transition-colors">
-                  <div
-                    className="h-9 w-9 rounded-xl flex items-center justify-center flex-shrink-0"
-                    style={{ backgroundColor: (entry.location?.color ?? '#3b82f6') + '20' }}
-                  >
-                    <ShoppingCart size={16} style={{ color: entry.location?.color ?? '#3b82f6' }} />
-                  </div>
+      {/* ── Filters bar ─────────────────────────────────────────────────────── */}
+      <Suspense>
+        <PurchaseFilters
+          locations={locations}
+          suppliers={suppliers}
+          currentParams={params as Record<string, string>}
+          activeFilters={activeFilters}
+        />
+      </Suspense>
 
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm font-semibold text-slate-900 truncate">
-                        {entry.supplier?.name ?? 'Sin proveedor'}
-                      </p>
-                      {entry.reference_number && (
-                        <span className="text-xs text-slate-400 font-mono">{entry.reference_number}</span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-3 mt-0.5">
-                      <span className="text-xs text-slate-400">{entry.location?.name}</span>
-                      <span className="text-xs text-slate-300">·</span>
-                      <span className="text-xs text-slate-400">{formatDate(entry.entry_date)}</span>
-                      <span className="text-xs text-slate-300">·</span>
-                      <span className="text-xs text-slate-400">{entry.items?.length ?? 0} productos</span>
-                    </div>
-                  </div>
+      {/* ── Table ───────────────────────────────────────────────────────────── */}
+      <PurchasesTable
+        entries={entries}
+        total={total}
+        page={page}
+        pageSize={pageSize}
+      />
+    </div>
+  )
+}
 
-                  <div className="text-right flex-shrink-0 flex items-center gap-3">
-                    {entry.total_amount > 0 && (
-                      <span className="text-sm font-bold text-slate-900 tabular-nums">
-                        {formatCurrency(entry.total_amount)}
-                      </span>
-                    )}
-                    <Badge variant={status.variant} size="sm">{status.label}</Badge>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </div>
+// ── Inline filter bar (server component) ─────────────────────────────────────
+
+function PurchaseFilters({
+  locations,
+  suppliers,
+  currentParams,
+  activeFilters,
+}: {
+  locations: Array<{ id: string; name: string }>
+  suppliers: Array<{ id: string; name: string }>
+  currentParams: Record<string, string>
+  activeFilters: number
+}) {
+  function buildHref(key: string, value: string) {
+    const p = { ...currentParams, [key]: value, page: '1' }
+    if (!value) delete p[key]
+    return `/purchases?${new URLSearchParams(p).toString()}`
+  }
+
+  const active = currentParams.status ?? ''
+  const locationId = currentParams.location_id ?? ''
+  const supplierId = currentParams.supplier_id ?? ''
+
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      {/* Search */}
+      <form method="GET" action="/purchases" className="relative flex-1 min-w-[200px] max-w-xs">
+        {Object.entries(currentParams)
+          .filter(([k]) => k !== 'search' && k !== 'page')
+          .map(([k, v]) => (
+            <input key={k} type="hidden" name={k} value={v} />
+          ))}
+        <input
+          type="search"
+          name="search"
+          defaultValue={currentParams.search ?? ''}
+          placeholder="Buscar remito, factura…"
+          className="w-full rounded-xl border border-slate-200 bg-white py-2 pl-3 pr-4 text-sm placeholder-slate-400 shadow-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100"
+        />
+      </form>
+
+      {/* Status tabs */}
+      <div className="flex items-center gap-1">
+        <a
+          href={buildHref('status', '')}
+          className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+            !active ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+          }`}
+        >
+          Todos
+        </a>
+        {PURCHASE_STATUSES.map((s) => (
+          <a
+            key={s}
+            href={buildHref('status', s)}
+            className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+              active === s
+                ? 'bg-slate-900 text-white'
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+            }`}
+          >
+            {PURCHASE_STATUS_LABELS[s]}
+          </a>
+        ))}
+      </div>
+
+      {/* Location selector */}
+      {locations.length > 1 && (
+        <form method="GET" action="/purchases">
+          {Object.entries(currentParams)
+            .filter(([k]) => k !== 'location_id' && k !== 'page')
+            .map(([k, v]) => (
+              <input key={k} type="hidden" name={k} value={v} />
+            ))}
+          <select
+            name="location_id"
+            defaultValue={locationId}
+            onChange={(e) => (e.target.form as HTMLFormElement)?.submit()}
+            className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600 shadow-sm focus:border-brand-500 focus:outline-none"
+          >
+            <option value="">Todas las ubicaciones</option>
+            {locations.map((l) => (
+              <option key={l.id} value={l.id}>{l.name}</option>
+            ))}
+          </select>
+        </form>
+      )}
+
+      {/* Supplier selector */}
+      {suppliers.length > 0 && (
+        <form method="GET" action="/purchases">
+          {Object.entries(currentParams)
+            .filter(([k]) => k !== 'supplier_id' && k !== 'page')
+            .map(([k, v]) => (
+              <input key={k} type="hidden" name={k} value={v} />
+            ))}
+          <select
+            name="supplier_id"
+            defaultValue={supplierId}
+            onChange={(e) => (e.target.form as HTMLFormElement)?.submit()}
+            className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600 shadow-sm focus:border-brand-500 focus:outline-none"
+          >
+            <option value="">Todos los proveedores</option>
+            {suppliers.map((s) => (
+              <option key={s.id} value={s.id}>{s.name}</option>
+            ))}
+          </select>
+        </form>
+      )}
+
+      {/* Clear filters */}
+      {activeFilters > 0 && (
+        <a
+          href="/purchases"
+          className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-500 hover:bg-slate-50 transition-colors"
+        >
+          ✕ Limpiar ({activeFilters})
+        </a>
       )}
     </div>
   )
