@@ -1,0 +1,118 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 248 250 252;      /* slate-50 */
+    --foreground: 15 23 42;         /* slate-900 */
+    --card: 255 255 255;
+    --card-foreground: 15 23 42;
+    --border: 226 232 240;          /* slate-200 */
+    --input: 226 232 240;
+    --ring: 59 130 246;             /* brand-500 */
+    --radius: 0.75rem;
+    --font-sans: var(--font-geist-sans), system-ui, sans-serif;
+  }
+
+  * {
+    @apply border-slate-200;
+    box-sizing: border-box;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-slate-50 text-slate-900;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Premium scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-slate-300 rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-slate-400;
+  }
+
+  /* Focus visible — brand ring */
+  :focus-visible {
+    @apply outline-none ring-2 ring-brand-500/30 ring-offset-1;
+  }
+
+  /* Selection */
+  ::selection {
+    @apply bg-brand-100 text-brand-900;
+  }
+
+  /* Typography defaults */
+  h1 { @apply text-2xl font-bold text-slate-900 tracking-tight; }
+  h2 { @apply text-xl font-semibold text-slate-900; }
+  h3 { @apply text-base font-semibold text-slate-900; }
+  h4 { @apply text-sm font-semibold text-slate-700; }
+}
+
+@layer components {
+  /* ── 3D Button supplemental CSS (for effects not achievable in Tailwind) ── */
+  .btn-3d-inner {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── Premium card surface ───────────────────────────────────────────────── */
+  .card-surface {
+    @apply bg-white rounded-xl border border-slate-200/80 shadow-card;
+  }
+
+  /* ── Safe area for mobile (bottom navigation) ───────────────────────────── */
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  /* ── Data table stripe ──────────────────────────────────────────────────── */
+  .table-stripe tbody tr:nth-child(even) {
+    @apply bg-slate-50/50;
+  }
+
+  /* ── Quantity badge ────────────────────────────────────────────────────── */
+  .qty-positive { @apply text-success-700 bg-success-50 rounded-md px-1.5 py-0.5 text-xs font-semibold tabular-nums; }
+  .qty-negative { @apply text-danger-700 bg-danger-50 rounded-md px-1.5 py-0.5 text-xs font-semibold tabular-nums; }
+  .qty-neutral  { @apply text-slate-700 bg-slate-100 rounded-md px-1.5 py-0.5 text-xs font-semibold tabular-nums; }
+
+  /* ── Loading skeleton ───────────────────────────────────────────────────── */
+  .skeleton {
+    @apply animate-pulse bg-slate-100 rounded-md;
+  }
+
+  /* ── Page container ────────────────────────────────────────────────────── */
+  .page-container {
+    @apply mx-auto max-w-7xl;
+  }
+}
+
+@layer utilities {
+  /* Tabular numbers for financial data */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Line clamp utilities */
+  .line-clamp-1 { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 1; }
+  .line-clamp-2 { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+
+  /* Gradient text */
+  .gradient-text {
+    @apply bg-gradient-to-r from-brand-600 to-brand-400 bg-clip-text text-transparent;
+  }
+}
