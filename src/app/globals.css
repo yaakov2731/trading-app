@@ -1,0 +1,555 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =============================================================================
+   GastroStock — Global Styles & Design Token Injection
+   ============================================================================= */
+
+@layer base {
+  /* ── CSS Custom Properties (design tokens as CSS vars) ──────────────────── */
+  :root {
+    /* Colors */
+    --color-bg:           #f8fafc;
+    --color-surface:      #ffffff;
+    --color-border:       #e2e8f0;
+    --color-text:         #0f172a;
+    --color-text-muted:   #64748b;
+    --color-brand:        #2563eb;
+    --color-brand-light:  #eff6ff;
+
+    /* Sidebar */
+    --sidebar-width:      280px;
+    --sidebar-collapsed:  72px;
+    --header-height:      64px;
+
+    /* Radii */
+    --radius-sm:   6px;
+    --radius-md:   8px;
+    --radius-lg:   10px;
+    --radius-xl:   12px;
+    --radius-2xl:  16px;
+
+    /* Shadows */
+    --shadow-card:      0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.04);
+    --shadow-card-hover:0 4px 12px -2px rgb(0 0 0 / 0.10), 0 2px 6px -2px rgb(0 0 0 / 0.06);
+    --shadow-focus:     0 0 0 3px rgba(59, 130, 246, 0.18);
+
+    /* Transitions */
+    --transition-btn:   all 100ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-hover: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* 3D Button shadows — the complete tactile depth system */
+    /* Each has three layers:
+       1) Inner top highlight (gives the face a light source gradient feel)
+       2) Bottom color ledge  (the physical "press depth")
+       3) Ambient drop shadow (grounds the button to the surface)          */
+    --btn-primary-idle:
+      0 1px 0 rgba(255,255,255,0.15) inset,
+      0 4px 0 #1d4ed8,
+      0 6px 14px rgba(37,99,235,0.30);
+    --btn-primary-hover:
+      0 1px 0 rgba(255,255,255,0.15) inset,
+      0 5px 0 #1d4ed8,
+      0 8px 18px rgba(37,99,235,0.38);
+    --btn-primary-active:
+      0 -1px 0 rgba(0,0,0,0.12) inset,
+      0 1px 0 #1d4ed8,
+      0 2px 6px  rgba(37,99,235,0.22);
+
+    --btn-secondary-idle:
+      0 1px 0 rgba(255,255,255,0.95) inset,
+      0 3px 0 #94a3b8,
+      0 5px 8px rgba(0,0,0,0.07);
+    --btn-secondary-hover:
+      0 1px 0 rgba(255,255,255,0.95) inset,
+      0 4px 0 #94a3b8,
+      0 6px 12px rgba(0,0,0,0.10);
+    --btn-secondary-active:
+      0 -1px 0 rgba(0,0,0,0.05) inset,
+      0 1px 0 #94a3b8,
+      0 2px 4px rgba(0,0,0,0.06);
+
+    --btn-danger-idle:
+      0 1px 0 rgba(255,255,255,0.15) inset,
+      0 4px 0 #b91c1c,
+      0 6px 14px rgba(220,38,38,0.30);
+    --btn-danger-hover:
+      0 1px 0 rgba(255,255,255,0.15) inset,
+      0 5px 0 #b91c1c,
+      0 8px 18px rgba(220,38,38,0.38);
+    --btn-danger-active:
+      0 -1px 0 rgba(0,0,0,0.12) inset,
+      0 1px 0 #b91c1c,
+      0 2px 6px rgba(220,38,38,0.22);
+
+    --btn-success-idle:
+      0 1px 0 rgba(255,255,255,0.15) inset,
+      0 4px 0 #15803d,
+      0 6px 14px rgba(22,163,74,0.28);
+    --btn-success-hover:
+      0 1px 0 rgba(255,255,255,0.15) inset,
+      0 5px 0 #15803d,
+      0 8px 18px rgba(22,163,74,0.36);
+    --btn-success-active:
+      0 -1px 0 rgba(0,0,0,0.12) inset,
+      0 1px 0 #15803d,
+      0 2px 6px rgba(22,163,74,0.22);
+
+    --btn-warning-idle:
+      0 1px 0 rgba(255,255,255,0.25) inset,
+      0 4px 0 #b45309,
+      0 6px 14px rgba(217,119,6,0.25);
+    --btn-warning-hover:
+      0 1px 0 rgba(255,255,255,0.25) inset,
+      0 5px 0 #b45309,
+      0 8px 18px rgba(217,119,6,0.32);
+    --btn-warning-active:
+      0 -1px 0 rgba(0,0,0,0.10) inset,
+      0 1px 0 #b45309,
+      0 2px 6px rgba(217,119,6,0.18);
+  }
+
+  /* ── Global resets ──────────────────────────────────────────────────────── */
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    /* Prevent layout shift from scrollbar appearance */
+    scrollbar-gutter: stable;
+  }
+
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-feature-settings: "rlig" 1, "calt" 1, "ss01" 1;
+  }
+
+  /* ── Premium scrollbars ─────────────────────────────────────────────────── */
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 99px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+
+  /* ── Focus visible ──────────────────────────────────────────────────────── */
+  :focus-visible {
+    outline: none;
+    box-shadow: var(--shadow-focus);
+    border-radius: var(--radius-md);
+  }
+
+  /* ── Text selection ─────────────────────────────────────────────────────── */
+  ::selection {
+    background-color: #dbeafe;
+    color: #1e3a8a;
+  }
+
+  /* ── Type scale ─────────────────────────────────────────────────────────── */
+  h1 { font-size: 1.5rem;   line-height: 2rem;   font-weight: 700; letter-spacing: -0.025em; color: #0f172a; }
+  h2 { font-size: 1.25rem;  line-height: 1.75rem;font-weight: 600; letter-spacing: -0.015em; color: #0f172a; }
+  h3 { font-size: 1rem;     line-height: 1.5rem; font-weight: 600; color: #0f172a; }
+  h4 { font-size: 0.875rem; line-height: 1.25rem;font-weight: 600; color: #334155; }
+}
+
+/* =============================================================================
+   COMPONENT CLASSES
+   ============================================================================= */
+
+@layer components {
+
+  /* ── 3D Button base ─────────────────────────────────────────────────────── */
+  /* Applied via JS — these classes provide the actual 3D press mechanics      */
+
+  .btn-3d-primary {
+    background: linear-gradient(to bottom, #3b82f6 0%, #2563eb 100%);
+    box-shadow: var(--btn-primary-idle);
+    transform: translateY(0);
+    transition: var(--transition-btn);
+  }
+  .btn-3d-primary:hover:not(:disabled) {
+    box-shadow: var(--btn-primary-hover);
+    transform: translateY(-1px);
+  }
+  .btn-3d-primary:active:not(:disabled) {
+    box-shadow: var(--btn-primary-active);
+    transform: translateY(2px);
+    transition-duration: 60ms;
+  }
+
+  .btn-3d-secondary {
+    background: linear-gradient(to bottom, #ffffff 0%, #f8fafc 100%);
+    box-shadow: var(--btn-secondary-idle);
+    border: 1px solid #e2e8f0;
+    transform: translateY(0);
+    transition: var(--transition-btn);
+  }
+  .btn-3d-secondary:hover:not(:disabled) {
+    box-shadow: var(--btn-secondary-hover);
+    border-color: #cbd5e1;
+    transform: translateY(-1px);
+  }
+  .btn-3d-secondary:active:not(:disabled) {
+    box-shadow: var(--btn-secondary-active);
+    transform: translateY(2px);
+    transition-duration: 60ms;
+  }
+
+  .btn-3d-danger {
+    background: linear-gradient(to bottom, #ef4444 0%, #dc2626 100%);
+    box-shadow: var(--btn-danger-idle);
+    transform: translateY(0);
+    transition: var(--transition-btn);
+  }
+  .btn-3d-danger:hover:not(:disabled) {
+    box-shadow: var(--btn-danger-hover);
+    transform: translateY(-1px);
+  }
+  .btn-3d-danger:active:not(:disabled) {
+    box-shadow: var(--btn-danger-active);
+    transform: translateY(2px);
+    transition-duration: 60ms;
+  }
+
+  .btn-3d-success {
+    background: linear-gradient(to bottom, #22c55e 0%, #16a34a 100%);
+    box-shadow: var(--btn-success-idle);
+    transform: translateY(0);
+    transition: var(--transition-btn);
+  }
+  .btn-3d-success:hover:not(:disabled) {
+    box-shadow: var(--btn-success-hover);
+    transform: translateY(-1px);
+  }
+  .btn-3d-success:active:not(:disabled) {
+    box-shadow: var(--btn-success-active);
+    transform: translateY(2px);
+    transition-duration: 60ms;
+  }
+
+  .btn-3d-warning {
+    background: linear-gradient(to bottom, #fbbf24 0%, #f59e0b 100%);
+    box-shadow: var(--btn-warning-idle);
+    transform: translateY(0);
+    transition: var(--transition-btn);
+  }
+  .btn-3d-warning:hover:not(:disabled) {
+    box-shadow: var(--btn-warning-hover);
+    transform: translateY(-1px);
+  }
+  .btn-3d-warning:active:not(:disabled) {
+    box-shadow: var(--btn-warning-active);
+    transform: translateY(2px);
+    transition-duration: 60ms;
+  }
+
+  /* ── Premium card surface ───────────────────────────────────────────────── */
+  .card-surface {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-card);
+  }
+
+  /* ── Stat card number ───────────────────────────────────────────────────── */
+  .stat-number {
+    font-size: 1.875rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+    color: #0f172a;
+  }
+
+  /* ── Premium input ──────────────────────────────────────────────────────── */
+  .input-base {
+    height: 40px;
+    width: 100%;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    padding: 0 12px;
+    font-size: 14px;
+    color: var(--color-text);
+    transition: border-color 150ms, box-shadow 150ms;
+    outline: none;
+  }
+  .input-base::placeholder {
+    color: #94a3b8;
+  }
+  .input-base:hover:not(:disabled) {
+    border-color: #cbd5e1;
+  }
+  .input-base:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.16);
+  }
+  .input-base:disabled {
+    background: #f8fafc;
+    color: #94a3b8;
+    cursor: not-allowed;
+  }
+  .input-error {
+    border-color: #ef4444 !important;
+  }
+  .input-error:focus {
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.16) !important;
+  }
+
+  /* ── Mobile bottom nav safe area ────────────────────────────────────────── */
+  .safe-area-bottom {
+    padding-bottom: max(env(safe-area-inset-bottom, 0px), 0px);
+  }
+
+  /* ── Loading skeleton ───────────────────────────────────────────────────── */
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      #f1f5f9 25%,
+      #e9eef5 50%,
+      #f1f5f9 75%
+    );
+    background-size: 400% 100%;
+    animation: shimmer 1.6s ease-in-out infinite;
+    border-radius: 6px;
+  }
+
+  /* ── Quantity chips ─────────────────────────────────────────────────────── */
+  .qty-positive {
+    color: #15803d;
+    background: #f0fdf4;
+    border-radius: 6px;
+    padding: 2px 6px;
+    font-size: 12px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .qty-negative {
+    color: #b91c1c;
+    background: #fef2f2;
+    border-radius: 6px;
+    padding: 2px 6px;
+    font-size: 12px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── SKU chip ───────────────────────────────────────────────────────────── */
+  .sku-chip {
+    display: inline-flex;
+    align-items: center;
+    font-family: var(--font-geist-mono), monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+    border-radius: 6px;
+    padding: 2px 8px;
+  }
+
+  /* ── Sidebar item ───────────────────────────────────────────────────────── */
+  .sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-radius: 10px;
+    padding: 9px 12px;
+    font-size: 13.5px;
+    font-weight: 500;
+    transition: background 120ms, color 120ms;
+    cursor: pointer;
+  }
+  .sidebar-item--active {
+    background: #2563eb;
+    color: #ffffff;
+  }
+  .sidebar-item--inactive {
+    color: #94a3b8;
+  }
+  .sidebar-item--inactive:hover {
+    background: rgba(255,255,255,0.06);
+    color: #e2e8f0;
+  }
+
+  /* ── Badge pulse ────────────────────────────────────────────────────────── */
+  .badge-pulse::before {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: inherit;
+    background: currentColor;
+    opacity: 0;
+    animation: badgePulse 2s ease-out infinite;
+  }
+
+  /* ── Table header ───────────────────────────────────────────────────────── */
+  .th-sortable {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    user-select: none;
+    transition: color 100ms;
+  }
+  .th-sortable:hover {
+    color: #0f172a;
+  }
+
+  /* ── Step indicator ─────────────────────────────────────────────────────── */
+  .step-circle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+    transition: all 200ms;
+  }
+  .step-circle--done {
+    background: #2563eb;
+    color: white;
+  }
+  .step-circle--active {
+    background: #eff6ff;
+    color: #2563eb;
+    border: 2px solid #2563eb;
+  }
+  .step-circle--pending {
+    background: #f1f5f9;
+    color: #94a3b8;
+    border: 2px solid #e2e8f0;
+  }
+}
+
+/* =============================================================================
+   UTILITY CLASSES
+   ============================================================================= */
+
+@layer utilities {
+  /* Tabular numbers — always use for financial/qty data */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Text utilities */
+  .text-balance { text-wrap: balance; }
+  .gradient-text {
+    background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .gradient-text-brand {
+    background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 50%, #60a5fa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Page max-width container */
+  .page-container {
+    max-width: 1280px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* Prevent text overflow in tables */
+  .cell-clamp {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Hide scrollbar but keep scroll functionality */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* =============================================================================
+   KEYFRAME ANIMATIONS
+   ============================================================================= */
+
+@keyframes shimmer {
+  0%   { background-position: -400% 0; }
+  100% { background-position:  400% 0; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.94); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes badgePulse {
+  0%   { transform: scale(1);   opacity: 0.4; }
+  70%  { transform: scale(1.8); opacity: 0; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+
+@keyframes spinSlow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes successBounce {
+  0%   { transform: scale(0.8); opacity: 0; }
+  60%  { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1);   opacity: 1; }
+}
+
+/* Animation utility classes */
+.animate-fade-in         { animation: fadeIn       200ms ease-out both; }
+.animate-fade-up         { animation: fadeUp       220ms ease-out both; }
+.animate-fade-down       { animation: fadeDown     220ms ease-out both; }
+.animate-scale-in        { animation: scaleIn      180ms ease-out both; }
+.animate-slide-in-right  { animation: slideInRight 200ms ease-out both; }
+.animate-slide-in-left   { animation: slideInLeft  200ms ease-out both; }
+.animate-success-bounce  { animation: successBounce 400ms cubic-bezier(0.34, 1.56, 0.64, 1) both; }
