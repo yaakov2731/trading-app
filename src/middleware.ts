@@ -16,39 +16,35 @@ export async function middleware(request: NextRequest) {
 
   // Skip static assets entirely
   if (isStaticAsset(pathname)) {
-    return
+    return NextResponse.next()
   }
 
-  // Create client — this MUST happen on every request to refresh the session
+  // Create client — this MUST happen on every request to refresh session cookies
   const { supabase, response } = createMiddlewareClient(request)
 
-  // Refresh session (critical — do not remove)
-  let user = null
-  try {
-    const { data } = await supabase.auth.getUser()
-    user = data.user
-  } catch {
-    // If Supabase is unreachable, treat as unauthenticated so middleware never crashes
-  }
+  // Read session from cookie — no network call, safe on Edge Runtime
+  // (Security validation happens in server components / API routes via getUser())
+  const { data: { session } } = await supabase.auth.getSession()
+  const isAuthenticated = !!session?.user
 
   // Unauthenticated + protected route → login
-  if (!user && !isPublicPath(pathname)) {
+  if (!isAuthenticated && !isPublicPath(pathname)) {
     return buildLoginRedirect(request)
   }
 
   // Authenticated + login page → dashboard
-  if (user && pathname === '/login') {
+  if (isAuthenticated && pathname === '/login') {
     return buildDashboardRedirect(request)
   }
 
   // Root redirect
   if (pathname === '/') {
-    return user
+    return isAuthenticated
       ? buildDashboardRedirect(request)
       : buildLoginRedirect(request)
   }
 
-  return response ?? NextResponse.next()
+  return response
 }
 
 export const config = {
