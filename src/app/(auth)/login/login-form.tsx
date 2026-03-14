@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input, FormField } from '@/components/ui/input'
-import { createClient } from '@/lib/db/client'
+import { createClient } from '@/lib/supabase/client'
 import { loginSchema, type LoginInput } from '@/lib/schemas'
 
 export function LoginForm() {
