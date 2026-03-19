@@ -16,10 +16,10 @@
  *   • Tablas con separadores por tabulación o múltiples espacios
  */
 
-const fs       = require('fs');
-const path     = require('path');
-const pdfParse = require('pdf-parse');
-const XLSX     = require('xlsx');
+const fs           = require('fs');
+const path         = require('path');
+const { execSync } = require('child_process');
+const XLSX         = require('xlsx');
 
 // ─── CLI ──────────────────────────────────────────────────────────────────────
 
@@ -276,21 +276,23 @@ function generarExcel(productos, proveedor, outPath, hojaName) {
 
 async function main() {
   console.log(`\n📄 Leyendo PDF: ${pdfArg}`);
-  const buffer = fs.readFileSync(pdfArg);
 
-  let data;
+  let texto;
   try {
-    data = await pdfParse(buffer);
+    const extractorPath = path.join(__dirname, 'extract_pdf.mjs');
+    texto = execSync(`node "${extractorPath}" "${path.resolve(pdfArg)}"`, {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],  // silenciar warnings de pdfjs
+    });
   } catch (e) {
-    console.error('ERROR al parsear el PDF:', e.message);
+    console.error('ERROR al extraer texto del PDF:', e.message);
     process.exit(1);
   }
 
-  const totalPags = data.numpages;
-  const totalChars = data.text.length;
-  console.log(`   Páginas: ${totalPags}  |  Caracteres extraídos: ${totalChars}`);
+  const totalChars = texto.length;
+  console.log(`   Caracteres extraídos: ${totalChars}`);
 
-  const productos = extraerProductos(data.text, nombreProveedor);
+  const productos = extraerProductos(texto, nombreProveedor);
 
   if (productos.length === 0) {
     console.warn('\n⚠  No se detectaron líneas de producto con precio.');
@@ -299,7 +301,7 @@ async function main() {
     console.warn('   • El formato del catálogo no tiene precios numéricos visibles');
     console.warn('   • Los precios usan un formato no estándar');
     console.warn('\n   Tip: revisá el texto extraído guardado en "debug_pdf_text.txt"');
-    fs.writeFileSync('debug_pdf_text.txt', data.text, 'utf8');
+    fs.writeFileSync('debug_pdf_text.txt', texto, 'utf8');
     process.exit(1);
   }
 
