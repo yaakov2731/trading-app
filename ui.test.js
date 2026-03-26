@@ -458,8 +458,8 @@ describe('calculateLevels – auto-suggest entry mode', () => {
 // Select default values
 // ──────────────────────────────────────────────
 describe('Default select values', () => {
-    test('entry mode defaults to filtro_a (WR=83% con condiciones óptimas)', () => {
-        expect(document.getElementById('entryMode').value).toBe('filtro_a');
+    test('entry mode defaults to standard baseline mode', () => {
+        expect(document.getElementById('entryMode').value).toBe('standard');
     });
 
     test('instrument defaults to ES', () => {

@@ -743,9 +743,9 @@
                     <div class="input-group">
                         <label for="entryMode">Modo Entry</label>
                         <select id="entryMode">
-                            <option value="filtro_a" selected>★ Filtro A (4 pts / SL 2.5) — WR=83%, PF=10</option>
-                            <option value="aggressive">Agresivo (5 pts / SL 3.0) — WR=84%, PF=8.2</option>
-                            <option value="standard">Estándar (6.5 pts / SL 3.5)</option>
+                            <option value="filtro_a">4 pts / SL 2.5 — subset Filtro A (n=88)</option>
+                            <option value="aggressive">5 pts / SL 3.0 — subset Filtro A (n=88)</option>
+                            <option value="standard" selected>Estándar (6.5 pts / SL 3.5) — base defendible</option>
                             <option value="conservative">Conservador (8 pts / SL 4.0) — Gap UP</option>
                         </select>
                     </div>
@@ -762,13 +762,13 @@
                     </div>
                 </div>
 
-                <div class="section-divider" style="color:var(--green)">Filtros Avanzados (opcional — mejoran WR hasta 72.9%)</div>
+                <div class="section-divider" style="color:var(--green)">Filtros Avanzados (opcional — subsets LONG con WR histórico 61.5%-72.9%)</div>
                 <div class="input-grid">
                     <div class="input-group">
                         <label for="atr5">
                             ATR5 (5 sesiones)
                             <span class="tooltip"><i class="info-icon">?</i>
-                                <span class="tooltip-text">Promedio del Rango Total de las últimas 5 sesiones. Filtro clave: ATR5 &lt; ATR20 indica mercado en compresión → WR mejora a 61-72%.</span>
+                                <span class="tooltip-text">Promedio del Rango Total de las últimas 5 sesiones. ATR5 &lt; ATR20 activa el subset Filtro C: WR=61.5%, n=187, IC95% aprox. 54.5%-68.5%.</span>
                             </span>
                         </label>
                         <input type="number" id="atr5" placeholder="Ej: 28.5" step="0.1">
@@ -777,7 +777,7 @@
                         <label for="atr20">
                             ATR20 (20 sesiones)
                             <span class="tooltip"><i class="info-icon">?</i>
-                                <span class="tooltip-text">Promedio del Rango Total de las últimas 20 sesiones. Si ATR5/ATR20 &lt; 1.0 → Filtro C activo (WR=61.5%). Si &lt; 0.8 → Filtro A (WR=72.9%).</span>
+                                <span class="tooltip-text">Promedio del Rango Total de las últimas 20 sesiones. Si ATR5/ATR20 &lt; 1.0 → Filtro C (61.5%, n=187). Si &lt; 0.8 → Filtro A (72.9%, n=85). Ambos son subsets, no baseline.</span>
                             </span>
                         </label>
                         <input type="number" id="atr20" placeholder="Ej: 35.0" step="0.1">
@@ -786,7 +786,7 @@
                         <label for="dowSelect">
                             Día de la Semana
                             <span class="tooltip"><i class="info-icon">?</i>
-                                <span class="tooltip-text">Mar-Jue tienen mejor WR histórico. Filtro D: LONG + Vol&lt;100% + Rango&lt;40 + Mar-Jue → WR=62.3%, PF=1.89.</span>
+                                <span class="tooltip-text">Mar-Jue tienen mejor WR histórico dentro del subset LONG en compresión. Filtro D: 62.3%, n=114, IC95% aprox. 53.4%-71.2%.</span>
                             </span>
                         </label>
                         <select id="dowSelect">
@@ -808,6 +808,9 @@
                             Entry/SL/TP se calibran con MAE/MFE real en extremos para acercar las salidas al rango alcanzable.
                         </span>
                     </label>
+                </div>
+                <div style="margin-top:0.75rem;padding:0.7rem;background:rgba(234,179,8,0.08);border:1px solid rgba(234,179,8,0.2);border-radius:8px;font-size:0.72rem;color:var(--text-secondary);">
+                    <strong style="color:var(--yellow);">Lectura honesta:</strong> el sistema base validado sigue en <strong>36.1%</strong> de WR con <strong>1,545 trades</strong>. Los WR de 61%-73% corresponden a subsets filtrados de <strong>85-187 trades</strong>.
                 </div>
 
                 <button class="btn btn-primary" onclick="calculateLevels()">
@@ -1063,8 +1066,8 @@
         <!-- FILTRO A: MOVIMIENTO DESDE EL EXTREMO -->
         <div class="card" style="margin-top:1.5rem; border-color: rgba(168,85,247,0.3);">
             <div class="card-header">
-                <h2 class="card-title"><span class="card-title-icon">📍</span>Filtro A — Movimiento desde el Extremo (88 trades, 10 años)</h2>
-                <span class="badge" style="background:rgba(168,85,247,0.15);color:#a855f7;border:1px solid rgba(168,85,247,0.3);">Datos 15m reales</span>
+                <h2 class="card-title"><span class="card-title-icon">📍</span>Filtro A — Subset exploratorio de ejecución cerca del extremo (88 trades)</h2>
+                <span class="badge" style="background:rgba(168,85,247,0.15);color:#a855f7;border:1px solid rgba(168,85,247,0.3);">Datos 15m reales | hipótesis operativa</span>
             </div>
             <div class="three-col" style="margin-bottom:1rem;">
                 <div class="card" style="background:var(--bg-secondary);">
@@ -1099,18 +1102,16 @@
                 </div>
             </div>
             <div style="margin-top:0.75rem;">
-                <div style="font-size:0.72rem;color:var(--text-muted);margin-bottom:0.5rem;font-weight:600;">Comparativa de Entry Offset (Filtro A, 88 trades):</div>
+                <div style="font-size:0.72rem;color:var(--text-muted);margin-bottom:0.5rem;font-weight:600;">Comparativa de Entry Offset (subset Filtro A, 87-88 trades):</div>
                 <div class="table-wrapper">
                     <table>
-                        <thead><tr><th>Entry</th><th>SL</th><th>Trades</th><th>Win Rate</th><th>Profit Factor</th><th>P&amp;L Total</th></tr></thead>
+                        <thead><tr><th>Entry</th><th>SL</th><th>Trades</th><th>Win Rate</th><th>IC95% aprox.</th><th>Lectura</th><th>Profit Factor</th><th>P&amp;L Total</th></tr></thead>
                         <tbody id="filtroAEntryTable"></tbody>
                     </table>
                 </div>
             </div>
             <div style="margin-top:0.75rem;padding:0.6rem;background:rgba(168,85,247,0.05);border:1px solid rgba(168,85,247,0.2);border-radius:6px;font-size:0.72rem;color:var(--text-secondary);">
-                <strong style="color:#a855f7;">Conclusión:</strong> Con Filtro A activo, el precio sube &gt;4 pts desde el extremo en el 98.9% de los casos. 
-                El entry a <strong>4 pts del extremo</strong> captura ese movimiento con WR=83% y PF=10.13. 
-                El SL a 2.5 pts del extremo es suficiente: solo el 33% de los casos baja más de 3 pts post-touch.
+                <strong style="color:#a855f7;">Lectura correcta:</strong> este bloque no redefine el WR del sistema. Solo muestra que, dentro del subset Filtro A, ejecutar cerca del extremo mejoró el resultado histórico. Usarlo como hipótesis táctica; no como headline general del método.
             </div>
         </div>
 
@@ -1121,7 +1122,7 @@
                 <span class="badge" style="background:rgba(34,197,94,0.15);color:var(--green);border:1px solid rgba(34,197,94,0.3);">10 años de datos reales</span>
             </div>
             <p style="color:var(--text-muted);font-size:0.72rem;margin-bottom:1rem;">
-                Aplicando filtros específicos al sistema base (36.1% WR), el Win Rate mejora significativamente. Solo aplican a setups LONG (Gap DOWN).
+                Aplicando filtros específicos al sistema base (36.1% WR), el Win Rate mejora en subsets LONG. La mejora es real en el histórico, pero la evidencia depende del tamaño de muestra de cada subset.
             </p>
             <div class="table-wrapper">
                 <table>
@@ -1131,6 +1132,8 @@
                             <th>Condiciones</th>
                             <th>Trades</th>
                             <th>Win Rate</th>
+                            <th>IC95% aprox.</th>
+                            <th>Evidencia</th>
                             <th>Profit Factor</th>
                             <th>P&amp;L Total</th>
                         </tr>
@@ -1144,7 +1147,7 @@
                     El sistema detectará qué filtros aplican y mostrará el WR esperado ajustado.
                 </p>
                 <p style="font-size:0.72rem;color:var(--text-muted);margin-top:0.4rem;">
-                    ATR5 y ATR20 = promedio del Rango Total (incluyendo gap) de las últimas 5 y 20 sesiones respectivamente.
+                    ATR5 y ATR20 = promedio del Rango Total (incluyendo gap) de las últimas 5 y 20 sesiones respectivamente. Si buscás el mejor equilibrio entre mejora y credibilidad, el punto más defendible hoy es <strong>Filtro C</strong> (61.5%, n=187).
                 </p>
             </div>
         </div>
@@ -1319,8 +1322,15 @@ function calculateLevels() {
     document.getElementById('gapTag').innerHTML = `<span>Gap: ${gapSign}${result.gap.toFixed(2)} (${gapSign}${result.gapPct.toFixed(2)}%)</span>`;
     document.getElementById('rangeTag').innerHTML = `<span>Rango: ${result.prevRangeTotal.toFixed(1)} pts</span>`;
     const g25 = result.gap25Pattern;
-    document.getElementById('gap25Tag').innerHTML = `<span>Gap25: ${g25.quarterMovePts.toFixed(1)} pts | MR ${g25.meanReversionHitPct.toFixed(1)}% | WR calib ${result.executionMode==='EXTREME_ADAPTIVE'?result.expectedWR_execution.toFixed(1)+'%':'--'}</span>`;
-    document.getElementById('wrTag').innerHTML = `<span>WR estimado: ~${result.expectedWR_execution.toFixed(1)}%</span>`;
+    const anticipation = result.extremeAnticipation;
+    const anticipationSnippet = anticipation
+        ? ` | Objetivo rango: ${anticipation.primaryTargetLevel} (${anticipation.confidencePct.toFixed(0)}%)`
+        : '';
+    document.getElementById('gap25Tag').innerHTML = `<span>Gap25: ${g25.quarterMovePts.toFixed(1)} pts | MR ${g25.meanReversionHitPct.toFixed(1)}% | WR calib ${result.executionMode==='EXTREME_ADAPTIVE'?result.expectedWR_execution.toFixed(1)+'%':'--'}${anticipationSnippet}</span>`;
+    const activeSubset = result.filterAnalysis && result.filterAnalysis.bestFilterCIText
+        ? `Subset activo: Filtro ${result.filterAnalysis.bestFilterName} | n=${result.filterAnalysis.bestFilterTrades} | IC95 ${result.filterAnalysis.bestFilterCIText}`
+        : `Base validada: n=${BACKTEST_STATS.totalTrades} | IC95 ${BACKTEST_STATS.baselineCIText}`;
+    document.getElementById('wrTag').innerHTML = `<span>WR operativo ajustado: ~${result.expectedWR_execution.toFixed(1)}%</span><br><span style="font-size:0.7rem;color:var(--text-muted);">${activeSubset}</span>`;
 
     // Entry/SL labels
     if (result.executionMode === 'EXTREME_ADAPTIVE') {
@@ -1409,7 +1419,10 @@ function calculateLevels() {
     } else {
         const wrDisplay = result.expectedWR_execution.toFixed(1);
         const qualLabel = (fa && fa.qualityScore >= 4) ? ' ★★★ SETUP PREMIUM' : (fa && fa.qualityScore >= 3) ? ' ★★ SETUP BUENO' : '';
-        alertDiv.innerHTML = `<div class="alert alert-success"><span>✅</span><div><strong>Setup válido${qualLabel}.</strong> Gap DOWN + Extremo Real definido. TP1 alineado a Gap25. WR esperado: ~${wrDisplay}%. Verificar 3/4 checklist.</div></div>`;
+        const anticipationMsg = result.extremeAnticipation
+            ? ` Objetivo principal dentro del rango: <strong>${result.extremeAnticipation.primaryTargetLevel}</strong> (confianza ~${result.extremeAnticipation.confidencePct.toFixed(0)}%).`
+            : '';
+        alertDiv.innerHTML = `<div class="alert alert-success"><span>✅</span><div><strong>Setup válido${qualLabel}.</strong> Gap DOWN + Extremo Real definido. TP1 alineado a Gap25. WR esperado: ~${wrDisplay}%.${anticipationMsg} Verificar 3/4 checklist.</div></div>`;
     }
 
     // Summary
@@ -1565,11 +1578,14 @@ function renderBacktestTab() {
             const badge = isOptimal ? ' <span style="background:rgba(168,85,247,0.2);color:#a855f7;border-radius:3px;padding:1px 5px;font-size:0.65rem;margin-left:4px;">RECOMENDADO</span>' : '';
             const wrColor = r.wr >= 84 ? '#22c55e' : r.wr >= 80 ? '#22c55e' : '#eab308';
             const pfColor = r.pf >= 8 ? '#22c55e' : r.pf >= 5 ? '#eab308' : '#a1a1aa';
+            const evidenceColor = r.evidenceLabel === 'Exploratoria' ? '#eab308' : '#22c55e';
             return `<tr style="${rowStyle}">
                 <td style="font-weight:600;">${r.entry} pts${badge}</td>
                 <td>${r.sl} pts</td>
                 <td class="td-blue">${r.trades}</td>
                 <td style="color:${wrColor};font-weight:700;">${r.wr}%</td>
+                <td style="color:var(--text-muted);">${r.ciText}</td>
+                <td style="color:${evidenceColor};font-weight:600;">${r.evidenceLabel}</td>
                 <td style="color:${pfColor};font-weight:700;">${r.pf}</td>
                 <td class="td-green">$${r.pnl_usd.toLocaleString()}</td>
             </tr>`;
@@ -1587,11 +1603,14 @@ function renderBacktestTab() {
             const rowStyle = isBaseline ? 'opacity:0.6;' : '';
             const badge = i === 1 ? ' <span style="background:rgba(34,197,94,0.2);color:#22c55e;border-radius:3px;padding:1px 5px;font-size:0.65rem;margin-left:4px;">RECOMENDADO</span>' :
                           i === 2 ? ' <span style="background:rgba(168,85,247,0.2);color:#a855f7;border-radius:3px;padding:1px 5px;font-size:0.65rem;margin-left:4px;">MÁX WR</span>' : '';
+            const evidenceColor = f.evidenceLabel === 'Robusta' ? '#22c55e' : f.evidenceLabel === 'Intermedia' ? '#eab308' : '#f97316';
             return `<tr style="${rowStyle}">
                 <td style="font-weight:600;">${f.name}${badge}</td>
                 <td style="color:var(--text-muted);font-size:0.72rem;">${f.conditions}</td>
                 <td class="td-blue">${f.trades}</td>
                 <td style="color:${wrColor};font-weight:700;">${wr}%</td>
+                <td style="color:var(--text-muted);">${f.ciText}</td>
+                <td style="color:${evidenceColor};font-weight:600;">${f.evidenceLabel}</td>
                 <td style="color:${pfColor};font-weight:600;">${f.pf}</td>
                 <td class="${f.pnl_usd >= 0 ? 'td-green' : 'td-red'}">$${f.pnl_usd.toLocaleString()}</td>
             </tr>`;

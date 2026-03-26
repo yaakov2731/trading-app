@@ -23,8 +23,8 @@ const RANGE_FRACTIONS = {
     f3: 105 / 143,  // ≈ 0.734 (nivel "105" de la libreta ≈ 3/4 del rango)
 };
 
-// Entry modes - puntos desde el extremo real
-// FILTRO A ÓPTIMO: Entry=4pts / SL=2.5pts → WR=83%, PF=10.13 (10 años de datos)
+// Entry modes - puntos desde el extremo real.
+// Los WR altos por offset provienen del subset Filtro A (88 trades), no del sistema base.
 const entryModes = {
     'filtro_a':    { entry: 4.0, sl: 2.5,  label: '4 pts ★ Filtro A' },
     'aggressive':  { entry: 5.0, sl: 3.0,  label: '5 pts' },
@@ -64,20 +64,20 @@ const BACKTEST_STATS = {
     // Filtro C: LONG + Vol<100% + Rango<40 → WR=61.5%, PF=1.77, 187 trades (RECOMENDADO)
     // Filtro D: LONG + Vol<100% + Rango<40 + Mar-Jue → WR=62.3%, PF=1.89, 114 trades
     filterStats: [
-        { name: 'Sin filtros (baseline)',              trades: 1545, wr: 36.1, pf: 1.11,  pnl_usd: 56145,  conditions: 'Todos los setups' },
-        { name: 'LONG + Vol<100% + Rango<40',          trades: 187,  wr: 61.5, pf: 1.77,  pnl_usd: 27631,  conditions: 'Gap DOWN + ATR5<ATR20 + Rango<40' },
-        { name: 'LONG + Vol<80% + Rango<40',           trades: 85,   wr: 72.9, pf: 2.82,  pnl_usd: 20969,  conditions: 'Gap DOWN + ATR5<80%ATR20 + Rango<40' },
-        { name: 'LONG + Close D-1<35% + Rango<40',     trades: 78,   wr: 67.9, pf: 2.25,  pnl_usd: 15634,  conditions: 'Gap DOWN + Close D-1 bajo + Rango<40' },
-        { name: 'LONG + Vol<100% + Rango<40 + Mar-Jue', trades: 114, wr: 62.3, pf: 1.89,  pnl_usd: 19084,  conditions: 'Gap DOWN + ATR5<ATR20 + Rango<40 + Mar-Jue' },
+        withWinRateContext({ name: 'Sistema base total', trades: 1545, wr: 36.1, pf: 1.11, pnl_usd: 56145, conditions: 'Todos los setups' }),
+        withWinRateContext({ name: 'Subset LONG + Vol<100% + Rango<40', trades: 187, wr: 61.5, pf: 1.77, pnl_usd: 27631, conditions: 'Gap DOWN + ATR5<ATR20 + Rango<40' }),
+        withWinRateContext({ name: 'Subset LONG + Vol<80% + Rango<40', trades: 85, wr: 72.9, pf: 2.82, pnl_usd: 20969, conditions: 'Gap DOWN + ATR5<80%ATR20 + Rango<40' }),
+        withWinRateContext({ name: 'Subset LONG + Close D-1<35% + Rango<40', trades: 78, wr: 67.9, pf: 2.25, pnl_usd: 15634, conditions: 'Gap DOWN + Close D-1 bajo + Rango<40' }),
+        withWinRateContext({ name: 'Subset LONG + Vol<100% + Rango<40 + Mar-Jue', trades: 114, wr: 62.3, pf: 1.89, pnl_usd: 19084, conditions: 'Gap DOWN + ATR5<ATR20 + Rango<40 + Mar-Jue' }),
     ],
     // FILTRO A CON ENTRY OPTIMIZADO (análisis de movimiento desde extremo)
     filtroAEntryStats: [
-        { entry: 4.0, sl: 2.5, trades: 88, wr: 83.0, pf: 10.13, pnl_usd: 44503 },
-        { entry: 4.0, sl: 3.0, trades: 88, wr: 84.1, pf: 10.12, pnl_usd: 44703 },
-        { entry: 5.0, sl: 2.5, trades: 88, wr: 83.0, pf: 8.13,  pnl_usd: 40103 },
-        { entry: 5.0, sl: 3.0, trades: 88, wr: 84.1, pf: 8.20,  pnl_usd: 40303 },
-        { entry: 6.5, sl: 3.5, trades: 88, wr: 84.1, pf: 5.76,  pnl_usd: 33353 },
-        { entry: 8.0, sl: 4.0, trades: 87, wr: 86.2, pf: 4.86,  pnl_usd: 27766 },
+        withWinRateContext({ entry: 4.0, sl: 2.5, trades: 88, wr: 83.0, pf: 10.13, pnl_usd: 44503 }),
+        withWinRateContext({ entry: 4.0, sl: 3.0, trades: 88, wr: 84.1, pf: 10.12, pnl_usd: 44703 }),
+        withWinRateContext({ entry: 5.0, sl: 2.5, trades: 88, wr: 83.0, pf: 8.13, pnl_usd: 40103 }),
+        withWinRateContext({ entry: 5.0, sl: 3.0, trades: 88, wr: 84.1, pf: 8.20, pnl_usd: 40303 }),
+        withWinRateContext({ entry: 6.5, sl: 3.5, trades: 88, wr: 84.1, pf: 5.76, pnl_usd: 33353 }),
+        withWinRateContext({ entry: 8.0, sl: 4.0, trades: 87, wr: 86.2, pf: 4.86, pnl_usd: 27766 }),
     ],
     // Estadísticas de movimiento desde el extremo (Filtro A, 88 trades, 10 años)
     extremeMovement: {
@@ -139,6 +139,9 @@ const BACKTEST_STATS = {
         { year: 2026, trades: 19,  wins: 7,   wr: 36.8, pnl: 3553   },
     ]
 };
+
+BACKTEST_STATS.baselineCI = computeWinRateConfidenceInterval(BACKTEST_STATS.winRate, BACKTEST_STATS.totalTrades);
+BACKTEST_STATS.baselineCIText = `${BACKTEST_STATS.baselineCI.ciLowPct}%-${BACKTEST_STATS.baselineCI.ciHighPct}%`;
 
 // Backtest real de patrón GAP ± 25% del rango previo desde extremo de primera hora RTH.
 // Fuente reproducible en scripts/calibrate_gap25_databento.py (Databento 1m, 2010-06-07..2026-02-26)
@@ -224,6 +227,39 @@ function clamp(value, min, max) {
     return Math.max(min, Math.min(max, value));
 }
 
+function round1(value) {
+    return Math.round(value * 10) / 10;
+}
+
+function computeWinRateConfidenceInterval(wrPct, trades) {
+    if (!Number.isFinite(wrPct) || !Number.isFinite(trades) || trades <= 0) return null;
+
+    const p = clamp(wrPct / 100, 0, 1);
+    const z = 1.96;
+    const se = Math.sqrt((p * (1 - p)) / trades);
+    return {
+        ciLowPct: round1(clamp((p - z * se) * 100, 0, 100)),
+        ciHighPct: round1(clamp((p + z * se) * 100, 0, 100)),
+    };
+}
+
+function sampleEvidenceLabel(trades) {
+    if (trades >= 500) return 'Robusta';
+    if (trades >= 150) return 'Intermedia';
+    return 'Exploratoria';
+}
+
+function withWinRateContext(stat) {
+    const ci = computeWinRateConfidenceInterval(stat.wr, stat.trades);
+    return {
+        ...stat,
+        ciLowPct: ci?.ciLowPct ?? null,
+        ciHighPct: ci?.ciHighPct ?? null,
+        ciText: ci ? `${ci.ciLowPct}%-${ci.ciHighPct}%` : '--',
+        evidenceLabel: sampleEvidenceLabel(stat.trades),
+    };
+}
+
 function getRangeBucket(prevRangeTotal) {
     if (prevRangeTotal < 25) return RANGE_BUCKET_KEYS.LT25;
     if (prevRangeTotal < 40) return RANGE_BUCKET_KEYS.R25_40;
@@ -277,6 +313,116 @@ function computeGap25Pattern({ isGapUp, prevRangeTotal, baseExtreme, direction }
 }
 
 /**
+ * Modela la probabilidad de reentrada dentro del rango previo después de formar extremo.
+ * Devuelve una "profundidad probable" (18.2/36.4/50/73.4%) y una confianza operativa.
+ */
+function computeExtremeAnticipation({
+    direction,
+    prevRangeTotal,
+    prevTrueHigh,
+    prevTrueLow,
+    baseExtreme,
+    hasExtremeReal,
+    gapPct,
+    setupScore,
+    sideCalib
+}) {
+    const rangeLevels = calcRangeLevels(prevTrueHigh, prevTrueLow, prevRangeTotal);
+    const edgePrice = direction === 'SHORT' ? prevTrueHigh : prevTrueLow;
+    const dislocationPts = direction === 'SHORT'
+        ? Math.max(0, baseExtreme - edgePrice)
+        : Math.max(0, edgePrice - baseExtreme);
+    const dislocationR = prevRangeTotal > 0 ? dislocationPts / prevRangeTotal : 0;
+
+    let dislocationQuality;
+    if (dislocationR <= 0.02) dislocationQuality = 0.72;
+    else if (dislocationR <= 0.12) dislocationQuality = 1.0;
+    else if (dislocationR <= 0.22) dislocationQuality = 0.86;
+    else if (dislocationR <= 0.35) dislocationQuality = 0.66;
+    else dislocationQuality = 0.45;
+
+    const wrComponent = clamp((sideCalib?.observedWRPct ?? 50) / 100, 0, 1);
+    const setupComponent = clamp((setupScore ?? 0) / 100, 0, 1);
+    const extremeBonus = hasExtremeReal ? 0.08 : -0.04;
+    const rangePenalty = prevRangeTotal >= 100 ? 0.12 : prevRangeTotal >= 60 ? 0.06 : 0;
+    const gapPenalty = gapPct >= 1.0 ? 0.08 : gapPct >= 0.5 ? 0.03 : 0;
+
+    const confidence = clamp(
+        (wrComponent * 0.46) +
+        (setupComponent * 0.29) +
+        (dislocationQuality * 0.17) +
+        extremeBonus -
+        rangePenalty -
+        gapPenalty,
+        0.20,
+        0.92
+    );
+
+    const candidates = direction === 'SHORT'
+        ? [
+            { level: 'H - R×0.182', fraction: 0.182, price: rangeLevels.H_f1 },
+            { level: 'H - R×0.364', fraction: 0.364, price: rangeLevels.H_f2 },
+            { level: 'Midpoint', fraction: 0.50, price: rangeLevels.midpoint },
+            { level: 'H - R×0.734', fraction: 0.734, price: rangeLevels.H_f3 },
+        ]
+        : [
+            { level: 'L + R×0.182', fraction: 0.182, price: rangeLevels.L_f1 },
+            { level: 'L + R×0.364', fraction: 0.364, price: rangeLevels.L_f2 },
+            { level: 'Midpoint', fraction: 0.50, price: rangeLevels.midpoint },
+            { level: 'L + R×0.734', fraction: 0.734, price: rangeLevels.L_f3 },
+        ];
+
+    let targetIdx = confidence >= 0.78 ? 3 : confidence >= 0.67 ? 2 : confidence >= 0.56 ? 1 : 0;
+    if (dislocationQuality < 0.60 && targetIdx > 0) targetIdx -= 1;
+    if (prevRangeTotal >= 100 && targetIdx > 1) targetIdx -= 1;
+
+    const primaryTarget = candidates[targetIdx];
+    const secondaryTarget = candidates[Math.min(targetIdx + 1, candidates.length - 1)];
+    const quarterMovePts = prevRangeTotal * (sideCalib?.tp1RangeMult ?? 0.25);
+
+    const suggestedEntryOffsetPts = clamp(
+        (sideCalib?.entryOffsetPts ?? 1.0) * (1.08 - confidence * 0.26) +
+        ((1 - dislocationQuality) * 0.2),
+        0.60,
+        Math.max(0.60, (sideCalib?.entryOffsetPts ?? 1.0) + 0.40)
+    );
+
+    const minTp2FromExtreme = Math.max(
+        quarterMovePts * 1.15,
+        suggestedEntryOffsetPts + (sideCalib?.stopOffsetPts ?? 3.0) * 1.20
+    );
+    const suggestedTp2FromExtremePts = Math.max(
+        Math.abs(primaryTarget.price - baseExtreme),
+        minTp2FromExtreme
+    );
+    const suggestedTp1FromExtremePts = Math.min(
+        suggestedTp2FromExtremePts - 0.75,
+        Math.max(
+            quarterMovePts,
+            suggestedEntryOffsetPts + (sideCalib?.stopOffsetPts ?? 3.0) * 0.65
+        )
+    );
+    const suggestedTp3FromExtremePts = Math.max(
+        suggestedTp2FromExtremePts + 1.0,
+        Math.abs(secondaryTarget.price - baseExtreme)
+    );
+
+    return {
+        confidencePct: confidence * 100,
+        dislocationPts,
+        dislocationR,
+        dislocationQuality,
+        primaryTargetLevel: primaryTarget.level,
+        primaryTargetFraction: primaryTarget.fraction,
+        secondaryTargetLevel: secondaryTarget.level,
+        suggestedEntryOffsetPts,
+        suggestedTp1FromExtremePts,
+        suggestedTp2FromExtremePts,
+        suggestedTp3FromExtremePts,
+    };
+}
+
+/**
  * Ajusta entry/SL/TP para acercar la ejecución al comportamiento histórico real
  * cerca del extremo (MFE/MAE observados en 10 años).
  */
@@ -288,7 +434,8 @@ function optimizeExecutionToExtremes({
     entryMode,
     filterAnalysis,
     setupScore,
-    gap25Pattern
+    gap25Pattern,
+    anticipationModel
 }) {
     const hist = BACKTEST_STATS.extremeMovement;
     const qualityScore = filterAnalysis?.qualityScore ?? 0;
@@ -316,6 +463,13 @@ function optimizeExecutionToExtremes({
     entryFromExtremePts = Math.min(entryFromExtremePts, Math.max(minEntryOffset, quarterMovePts * 0.55));
     // Anclar a calibración intradía real por lado.
     entryFromExtremePts = clamp((entryFromExtremePts * 0.4) + (sideCalib.entryOffsetPts * 0.6), minEntryOffset, entryMode.entry);
+    if (anticipationModel) {
+        entryFromExtremePts = clamp(
+            (entryFromExtremePts * 0.45) + (anticipationModel.suggestedEntryOffsetPts * 0.55),
+            minEntryOffset,
+            entryMode.entry
+        );
+    }
 
     // Stop desde entry calibrado con MAE histórico (p75/p90).
     let stopFromEntryPts = qualityScore >= 4 ? 3.0 : qualityScore >= 3 ? 3.8 : qualityScore >= 2 ? 4.8 : 5.8;
@@ -343,6 +497,23 @@ function optimizeExecutionToExtremes({
     let tp1FromExtremePts = Math.max(tp1Anchor, entryFromExtremePts + stopFromEntryPts * 0.75);
     tp2FromExtremePts = Math.max(tp2FromExtremePts, quarterMovePts * 1.55);
     let tp3FromExtremePts = Math.max(tp2FromExtremePts + 1.0, tp2FromExtremePts * 1.22);
+
+    if (anticipationModel) {
+        tp1FromExtremePts = clamp(
+            (tp1FromExtremePts * 0.35) + (anticipationModel.suggestedTp1FromExtremePts * 0.65),
+            entryFromExtremePts + 0.5,
+            tp2FromExtremePts - 0.75
+        );
+        tp2FromExtremePts = Math.max(
+            (tp2FromExtremePts * 0.35) + (anticipationModel.suggestedTp2FromExtremePts * 0.65),
+            minTp2FromExtreme
+        );
+        tp3FromExtremePts = Math.max(
+            tp2FromExtremePts + 1.0,
+            (tp3FromExtremePts * 0.25) + (anticipationModel.suggestedTp3FromExtremePts * 0.75)
+        );
+    }
+
     const tp3Cap = qualityScore >= 3 ? hist.mfe.p90 : hist.distToClose.p90;
     tp3FromExtremePts = Math.min(tp3FromExtremePts, tp3Cap);
     if (tp3FromExtremePts <= tp2FromExtremePts) tp3FromExtremePts = tp2FromExtremePts + 1.0;
@@ -377,6 +548,8 @@ function optimizeExecutionToExtremes({
         calibrationBucket: sideCalib.bucketKey,
         calibrationBucketLabel: sideCalib.bucketLabel,
         calibrationObservedWRPct: sideCalib.observedWRPct,
+        anticipationPrimaryLevel: anticipationModel?.primaryTargetLevel ?? null,
+        anticipationConfidencePct: anticipationModel?.confidencePct ?? null,
     };
 }
 
@@ -521,6 +694,7 @@ function computeLevels({
             : todayOpen - gapMove;
     }
     const gap25Pattern = computeGap25Pattern({ isGapUp, prevRangeTotal, baseExtreme, direction });
+    const sideCalib = getSideCalibration(direction, prevRangeTotal);
 
     // --------------------------------------------------------
     // 5. ENTRY, SL, TPs DINÁMICOS
@@ -630,12 +804,24 @@ function computeLevels({
         direction, prevRangeTotal, gapPct, volRegime, closePosD1, dow, hasExtremeReal
     });
     const setupScoreInfo = setupScoreLabel(setupScore);
+    const extremeAnticipation = computeExtremeAnticipation({
+        direction,
+        prevRangeTotal,
+        prevTrueHigh,
+        prevTrueLow,
+        baseExtreme,
+        hasExtremeReal,
+        gapPct,
+        setupScore,
+        sideCalib,
+    });
 
     // Ajuste de ejecución "pegado al extremo" usando datos históricos (MFE/MAE).
+    const canUseAdaptiveExecution = optimizeToExtremes && filters.criticalPass && hasExtremeReal;
     let executionMode = 'CLASSIC';
     let executionProfile = null;
     let effectiveEntryPts = entryPts;
-    if (optimizeToExtremes) {
+    if (canUseAdaptiveExecution) {
         executionProfile = optimizeExecutionToExtremes({
             direction,
             prevRangeTotal,
@@ -645,6 +831,7 @@ function computeLevels({
             filterAnalysis,
             setupScore,
             gap25Pattern,
+            anticipationModel: extremeAnticipation,
         });
         if (executionProfile) {
             entry = executionProfile.entry;
@@ -666,16 +853,16 @@ function computeLevels({
     // Ajuste estimado del WR por ejecución más cercana al extremo.
     let expectedWR_execution = expectedWR_combined;
     if (executionMode === 'EXTREME_ADAPTIVE') {
-        const sideCalib = getSideCalibration(direction, prevRangeTotal);
         const baseExecutionWR = Math.max(expectedWR_combined, filteredWR || 0);
         const blendedRealWR = (baseExecutionWR * 0.65) + (sideCalib.observedWRPct * 0.35);
         const entryTightBonus = Math.max(0, entryPts - effectiveEntryPts) * 1.2;
         const qualityBonus = (filterAnalysis?.qualityScore || 0) * 0.8;
         const riskControlBonus = riskPoints <= BACKTEST_STATS.extremeMovement.mae.p75 ? 1.5 : -1.0;
         const gap25EdgeBonus = gap25Pattern.edgePct / 8; // edge positivo favorece reversión al 25%
-        const noExtremePenalty = hasExtremeReal ? 0 : -1.5;
+        const anticipationBonus = (extremeAnticipation.confidencePct - 50) / 8;
+        const deepTargetPenalty = (extremeAnticipation.primaryTargetFraction >= 0.734 && prevRangeTotal >= 60) ? -1.5 : 0;
         expectedWR_execution = clamp(
-            blendedRealWR + entryTightBonus + qualityBonus + riskControlBonus + gap25EdgeBonus + noExtremePenalty,
+            blendedRealWR + entryTightBonus + qualityBonus + riskControlBonus + gap25EdgeBonus + anticipationBonus + deepTargetPenalty,
             10,
             88
         );
@@ -719,6 +906,7 @@ function computeLevels({
         filters,
         filterAnalysis,
         gap25Pattern,
+        extremeAnticipation,
         // Win rate esperado
         expectedWR,
         expectedWR_range,
@@ -754,6 +942,10 @@ function computeAdvancedFilters({ isGapUp, prevRangeTotal, gapPct, volRegime, cl
     const volLow100 = volRegime !== null && volRegime < 1.00;  // ATR5 < 100% ATR20
     const closeLow  = closePosD1 !== null && closePosD1 < 0.35; // Close D-1 en zona baja
     const isMidWeek = dow !== null && [1, 2, 3].includes(dow); // Mar=1, Mie=2, Jue=3
+    const filterCStat = BACKTEST_STATS.filterStats[1];
+    const filterAStat = BACKTEST_STATS.filterStats[2];
+    const filterBStat = BACKTEST_STATS.filterStats[3];
+    const filterDStat = BACKTEST_STATS.filterStats[4];
 
     // Evaluar cada filtro
     const filterA = isLong && volLow80  && rangeOk;  // WR=72.9%
@@ -766,23 +958,26 @@ function computeAdvancedFilters({ isGapUp, prevRangeTotal, gapPct, volRegime, cl
     let bestFilterWR = null;
     let bestFilterName = null;
     let bestFilterPF = null;
+    let bestFilterTrades = null;
+    let bestFilterCIText = null;
+    let bestFilterEvidence = null;
     let qualityScore = 0; // 0=no aplica, 1=baseline, 2=bueno, 3=muy bueno, 4=excelente
 
     if (filterA) {
-        activeFilters.push({ name: 'Filtro A', wr: 72.9, pf: 2.82, trades: 85, label: 'Vol<80% + Rango<40' });
-        if (!bestFilterWR || 72.9 > bestFilterWR) { bestFilterWR = 72.9; bestFilterName = 'A'; bestFilterPF = 2.82; qualityScore = 4; }
+        activeFilters.push({ name: 'Filtro A', wr: filterAStat.wr, pf: filterAStat.pf, trades: filterAStat.trades, label: 'Vol<80% + Rango<40', ciText: filterAStat.ciText, evidenceLabel: filterAStat.evidenceLabel });
+        if (!bestFilterWR || filterAStat.wr > bestFilterWR) { bestFilterWR = filterAStat.wr; bestFilterName = 'A'; bestFilterPF = filterAStat.pf; bestFilterTrades = filterAStat.trades; bestFilterCIText = filterAStat.ciText; bestFilterEvidence = filterAStat.evidenceLabel; qualityScore = 4; }
     }
     if (filterB) {
-        activeFilters.push({ name: 'Filtro B', wr: 67.9, pf: 2.25, trades: 78, label: 'Close D-1<35% + Rango<40' });
-        if (!bestFilterWR || 67.9 > bestFilterWR) { bestFilterWR = 67.9; bestFilterName = 'B'; bestFilterPF = 2.25; qualityScore = Math.max(qualityScore, 4); }
+        activeFilters.push({ name: 'Filtro B', wr: filterBStat.wr, pf: filterBStat.pf, trades: filterBStat.trades, label: 'Close D-1<35% + Rango<40', ciText: filterBStat.ciText, evidenceLabel: filterBStat.evidenceLabel });
+        if (!bestFilterWR || filterBStat.wr > bestFilterWR) { bestFilterWR = filterBStat.wr; bestFilterName = 'B'; bestFilterPF = filterBStat.pf; bestFilterTrades = filterBStat.trades; bestFilterCIText = filterBStat.ciText; bestFilterEvidence = filterBStat.evidenceLabel; qualityScore = Math.max(qualityScore, 4); }
     }
     if (filterD) {
-        activeFilters.push({ name: 'Filtro D', wr: 62.3, pf: 1.89, trades: 114, label: 'Vol<100% + Rango<40 + Mar-Jue' });
-        if (!bestFilterWR || 62.3 > bestFilterWR) { bestFilterWR = 62.3; bestFilterName = 'D'; bestFilterPF = 1.89; qualityScore = Math.max(qualityScore, 3); }
+        activeFilters.push({ name: 'Filtro D', wr: filterDStat.wr, pf: filterDStat.pf, trades: filterDStat.trades, label: 'Vol<100% + Rango<40 + Mar-Jue', ciText: filterDStat.ciText, evidenceLabel: filterDStat.evidenceLabel });
+        if (!bestFilterWR || filterDStat.wr > bestFilterWR) { bestFilterWR = filterDStat.wr; bestFilterName = 'D'; bestFilterPF = filterDStat.pf; bestFilterTrades = filterDStat.trades; bestFilterCIText = filterDStat.ciText; bestFilterEvidence = filterDStat.evidenceLabel; qualityScore = Math.max(qualityScore, 3); }
     }
     if (filterC) {
-        activeFilters.push({ name: 'Filtro C', wr: 61.5, pf: 1.77, trades: 187, label: 'Vol<100% + Rango<40' });
-        if (!bestFilterWR || 61.5 > bestFilterWR) { bestFilterWR = 61.5; bestFilterName = 'C'; bestFilterPF = 1.77; qualityScore = Math.max(qualityScore, 3); }
+        activeFilters.push({ name: 'Filtro C', wr: filterCStat.wr, pf: filterCStat.pf, trades: filterCStat.trades, label: 'Vol<100% + Rango<40', ciText: filterCStat.ciText, evidenceLabel: filterCStat.evidenceLabel });
+        if (!bestFilterWR || filterCStat.wr > bestFilterWR) { bestFilterWR = filterCStat.wr; bestFilterName = 'C'; bestFilterPF = filterCStat.pf; bestFilterTrades = filterCStat.trades; bestFilterCIText = filterCStat.ciText; bestFilterEvidence = filterCStat.evidenceLabel; qualityScore = Math.max(qualityScore, 3); }
     }
 
     // Si es LONG sin filtros especiales
@@ -815,6 +1010,9 @@ function computeAdvancedFilters({ isGapUp, prevRangeTotal, gapPct, volRegime, cl
         bestFilterWR,
         bestFilterName,
         bestFilterPF,
+        bestFilterTrades,
+        bestFilterCIText,
+        bestFilterEvidence,
         qualityScore,
         hasHighQualitySetup,
         recommendation,
@@ -994,7 +1192,7 @@ if (typeof module !== 'undefined' && module.exports) {
         calcTrueRange, calcRangeLevels, computeLevels, computeFilters,
         computeAdvancedFilters, computeSetupScore, setupScoreLabel,
         suggestEntryMode, getFilterStatusClass, getFilterIcon,
-        optimizeExecutionToExtremes, computeGap25Pattern,
+        optimizeExecutionToExtremes, computeGap25Pattern, computeExtremeAnticipation,
         getRangeBucket, getSideCalibration,
     };
 }
